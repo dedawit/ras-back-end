@@ -1,0 +1,11 @@
+#!/bin/sh
+
+BRANCH=$(git symbolic-ref --short HEAD)
+
+if [ "$BRANCH" = "main" ] || [ "$BRANCH" = "develop" ]; then
+  echo "❌ Pushing to $BRANCH is not allowed!"
+  exit 1
+fi
+
+# If not main or develop, continue with the push
+echo "✅ Pushing to $BRANCH is allowed."
