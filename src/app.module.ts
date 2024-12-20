@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 import { AppController } from './app.controller';
 import { AppDataSource } from 'config/data-source';
 import { UserModule } from './modules/user/user.module';
+import { RFQModule } from './modules/rfq/rfq.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { UserModule } from './modules/user/user.module';
     }),
     TypeOrmModule.forRoot(AppDataSource.options),
     UserModule,
+    RFQModule
   ],
   controllers: [AppController],
   providers: [AppService],
