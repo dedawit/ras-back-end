@@ -29,4 +29,10 @@ export class User {
 
   @Column({ nullable: true })
   profile: string;
+
+  @Column({ nullable: true })
+  refreshToken: string;
+
+  @Column({ default: 0 })
+  tokenVersion: number;
 }
