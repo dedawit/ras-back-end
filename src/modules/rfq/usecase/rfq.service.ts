@@ -51,8 +51,8 @@ export class RFQService {
   }
 
 
-  async openRFQ(productId: string, buyerId: string): Promise<RFQ> {
-    const rfq = await this.rfqRepository.getRFQById(productId);
+  async openRFQ(rfqId: string, buyerId: string): Promise<RFQ> {
+    const rfq = await this.rfqRepository.getRFQById(rfqId);
     const user = await this.userRepository.getUserById(buyerId);
     if (!user) {
       throw new NotFoundException('User not found');

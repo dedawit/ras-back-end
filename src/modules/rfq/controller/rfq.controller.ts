@@ -36,12 +36,12 @@ export class RFQController {
   }
 
   @SerializeResponse(RFQResponse)
-  @Put(':productId/open/buyer/:buyerId/open-rfq')
+  @Put(':rfqId/open/buyer/:buyerId/open-rfq')
   async openRFQ(
-    @Param('productId') productId: string,
+    @Param('rfqId') rfqId: string,
     @Param('buyerId') buyerId: string,
   ): Promise<RFQ> {
-    return this.rfqService.openRFQ(productId, buyerId);
+    return this.rfqService.openRFQ(rfqId, buyerId);
   }
 
   @SerializeResponse(RFQResponse)
