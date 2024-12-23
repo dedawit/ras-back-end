@@ -9,5 +9,6 @@ import { UserRepository } from './persistence/user.repository';
   imports: [TypeOrmModule.forFeature([User])],
   controllers: [UserController],
   providers: [UserService, UserRepository],
+  exports: [UserRepository],
 })
 export class UserModule {}

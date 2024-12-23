@@ -11,32 +11,45 @@ export class RFQController {
   constructor(private readonly rfqService: RFQService) {}
 
   @SerializeResponse(RFQResponse)
-  @Post('create')
-  async createRFQ(@Body() rfqDto: createRFQDTO): Promise<RFQ> {
-    return this.rfqService.createRFQ(rfqDto);
+  @Post('buyer/:buyerId/create-rfq')
+  async createRFQ(
+    @Param('buyerId') buyerId: string,
+    @Body() rfqDto: createRFQDTO,
+  ): Promise<RFQ> {
+    return this.rfqService.createRFQ(buyerId, rfqDto);
   }
 
   @SerializeResponse(RFQResponse)
-  @Get(':id/singleRFQ')
-  async viewRFQ(@Param('id') id: number): Promise<RFQ> {
+  @Get(':id/view-rfq')
+  async viewRFQ(@Param('id') id: string): Promise<RFQ> {
     return this.rfqService.viewRFQ(id);
   }
 
   @SerializeResponse(RFQResponse)
-  @Put('edit/:id/edditRFQ')
-  async editRFQ(@Param('id') id: number, @Body() rfqDto: UpdateRFQDTO): Promise<RFQ> {
-    return this.rfqService.editRFQ(id, rfqDto);
+  @Put(':rfqId/buyer/:buyerId/edit-rfq')
+  async editRFQ(
+    @Param('rfqId') rfqId: string,
+    @Param('buyerId') buyerId: string,
+    @Body() rfqDto: UpdateRFQDTO,
+  ): Promise<RFQ> {
+    return this.rfqService.editRFQ(rfqId, buyerId, rfqDto);
   }
 
   @SerializeResponse(RFQResponse)
-  @Put('open/:id/OpenRFQ')
-  async openRFQ(@Param('id') id: number): Promise<RFQ> {
-    return this.rfqService.openRFQ(id);
+  @Put(':productId/open/buyer/:buyerId/open-rfq')
+  async openRFQ(
+    @Param('productId') productId: string,
+    @Param('buyerId') buyerId: string,
+  ): Promise<RFQ> {
+    return this.rfqService.openRFQ(productId, buyerId);
   }
 
   @SerializeResponse(RFQResponse)
-  @Put('close/:id/CloseRFQ')
-  async closeRFQ(@Param('id') id: number): Promise<RFQ> {
-    return this.rfqService.closeRFQ(id);
+  @Put(':rfqId/close/buyer/:buyerId/close-rfq')
+  async closeRFQ(
+    @Param('rfqId') rfqId: string,
+    @Param('buyerId') buyerId: string,
+  ): Promise<RFQ> {
+    return this.rfqService.closeRFQ(rfqId, buyerId);
   }
 }
