@@ -15,7 +15,7 @@ export class RFQService {
   ) { }
 
   async createRFQ(buyerId: string, rfqDto: createRFQDTO): Promise<RFQ> {
-    const user = await this.userRepository.getUserById(buyerId);
+    const user = await this.userRepository.findById(buyerId);
     if (!user || user.lastRole !== Role.BUYER) {
       throw new Error('Only buyers can create RFQs');
     }
@@ -27,7 +27,6 @@ export class RFQService {
     return this.rfqRepository.createRFQ(rfqDto, user);
   }
 
-  
   async viewRFQ(id: string): Promise<RFQ> {
     const rfq = await this.rfqRepository.getRFQById(id);
     if (!rfq) {
@@ -38,7 +37,7 @@ export class RFQService {
 
   async editRFQ(id: string, buyerId: string, rfqDto: UpdateRFQDTO): Promise<RFQ> {
     const existingRFQ = await this.rfqRepository.getRFQById(id);
-    const user = await this.userRepository.getUserById(buyerId);
+    const user = await this.userRepository.findById(buyerId);
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -54,7 +53,7 @@ export class RFQService {
 
   async openRFQ(rfqId: string, buyerId: string): Promise<RFQ> {
     const rfq = await this.rfqRepository.getRFQById(rfqId);
-    const user = await this.userRepository.getUserById(buyerId);
+    const user = await this.userRepository.findById(buyerId);
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -74,7 +73,7 @@ export class RFQService {
 
   async closeRFQ(rfqId: string, buyerId: string): Promise<RFQ> {
     const rfq = await this.rfqRepository.getRFQById(rfqId);
-    const user = await this.userRepository.getUserById(buyerId);
+    const user = await this.userRepository.findById(buyerId);
     if (!user) {
       throw new NotFoundException('User not found');
     }
