@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { Role } from '../utility/enums/role.enum';
+import { RFQ } from 'src/modules/rfq/persistence/rfq.entity';  // Adjust path if needed
 
 @Entity('user')
 export class User {
@@ -30,9 +31,13 @@ export class User {
   @Column({ nullable: true })
   profile: string;
 
+  @OneToMany(() => RFQ, (rfq) => rfq.user)
+  rfqs: RFQ[];
+
   @Column({ nullable: true })
   refreshToken: string;
 
   @Column({ default: 0 })
   tokenVersion: number;
+
 }

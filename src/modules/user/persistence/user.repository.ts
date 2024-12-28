@@ -43,6 +43,7 @@ export class UserRepository {
     return this.userRepository.findOne({ where: { email } });
   }
 
+
   // a method to store refresh token
   async storeRefreshToken(userId: string, refreshToken: string) {
     const user = await this.findById(userId);
@@ -56,4 +57,5 @@ export class UserRepository {
     Object.assign(user, { tokenVersion: user.tokenVersion + 1 });
     return this.userRepository.save(user);
   }
+
 }
