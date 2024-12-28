@@ -27,6 +27,7 @@ export class RFQService {
     return this.rfqRepository.createRFQ(rfqDto, user);
   }
 
+  
   async viewRFQ(id: string): Promise<RFQ> {
     const rfq = await this.rfqRepository.getRFQById(id);
     if (!rfq) {
