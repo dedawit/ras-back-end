@@ -33,4 +33,11 @@ export class User {
 
   @OneToMany(() => RFQ, (rfq) => rfq.user)
   rfqs: RFQ[];
+
+  @Column({ nullable: true })
+  refreshToken: string;
+
+  @Column({ default: 0 })
+  tokenVersion: number;
+
 }
