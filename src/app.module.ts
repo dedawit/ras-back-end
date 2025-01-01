@@ -10,7 +10,6 @@ import { RFQModule } from './modules/rfq/rfq.module';
 
 import { AuthModule } from './modules/auth/auth.module';
 
-
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -18,11 +17,8 @@ import { AuthModule } from './modules/auth/auth.module';
     }),
     TypeOrmModule.forRoot(AppDataSource.options),
     UserModule,
-
-    RFQModule
-
+    RFQModule,
     AuthModule,
-
   ],
   controllers: [AppController],
   providers: [AppService],
