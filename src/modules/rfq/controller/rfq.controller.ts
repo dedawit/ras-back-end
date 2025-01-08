@@ -1,22 +1,51 @@
-import { Controller, Post, Body, Get, Param, Put } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  Param,
+  Put,
+  UploadedFile,
+  UseInterceptors,
+  UseGuards,
+} from '@nestjs/common';
+import { Multer } from 'multer';
 import { RFQService } from '../usecase/rfq.service';
 import { createRFQDTO } from '../usecase/dto/create-rfq-dto';
 import { UpdateRFQDTO } from '../usecase/dto/update-rfq-dto';
 import { RFQ } from '../persistence/rfq.entity';
 import { SerializeResponse } from 'src/modules/common/serialize-response.decorator';
 import { RFQResponse } from '../usecase/dto/rfq-response.dto';
+import { RequestLoggingInterceptor } from 'src/modules/common/request-logging.interceptor';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { AuthGuard } from '@nestjs/passport';
+import { RoleGuard } from 'src/modules/common/guards/role.guard';
+import { Roles } from 'src/modules/common/roles.decorator';
+import { JwtAuthGuard } from 'src/modules/auth/guard/auth.guard';
 
 @Controller('rfq')
 export class RFQController {
   constructor(private readonly rfqService: RFQService) {}
 
   @SerializeResponse(RFQResponse)
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles('buyer')
+  @UseInterceptors(RequestLoggingInterceptor)
+  @UseInterceptors(FileInterceptor('file'))
   @Post('buyer/:buyerId/create-rfq')
   async createRFQ(
     @Param('buyerId') buyerId: string,
     @Body() rfqDto: createRFQDTO,
+    @UploadedFile() file?: Multer.File,
   ): Promise<RFQ> {
-    return this.rfqService.createRFQ(buyerId, rfqDto);
+    return this.rfqService.createRFQ(buyerId, rfqDto, file);
+  }
+
+  //get all rfqs
+  @Get(':buyerId/view-all-rfqs')
+  @UseGuards(JwtAuthGuard)
+  async findAllRFQs(@Param('buyerId') buyerId: string): Promise<RFQ[]> {
+    return this.rfqService.findAllRFQs(buyerId);
   }
 
   @SerializeResponse(RFQResponse)

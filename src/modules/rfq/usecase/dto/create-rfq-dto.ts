@@ -1,30 +1,42 @@
-import { IsString, IsInt, IsOptional, IsBoolean, IsDate, IsNotEmpty, IsPositive } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsBoolean,
+  IsDate,
+  IsNotEmpty,
+  IsPositive,
+  IsEmpty,
+  IsDateString,
+  IsEnum,
+} from 'class-validator';
+import { Transform } from 'class-transformer';
+import { Category } from '../../utility/enums/category.enum';
 
 export class createRFQDTO {
   @IsString({ message: 'Product name must be a string.' })
-  @IsNotEmpty({ message: 'Product name should not be empty.' })
   productName: string;
 
-  @IsInt({ message: 'Quantity must be an integer.' })
+  // Updated validation to allow float values
   @IsPositive({ message: 'Quantity must be a positive number.' })
+  @Transform(({ value }) => parseFloat(value)) // Ensure it's treated as a float
   quantity: number;
 
   @IsString({ message: 'Category must be a string.' })
   @IsNotEmpty({ message: 'Category should not be empty.' })
+  @IsEnum(Category, {
+    message: 'Category must be a valid category from the predefined options.',
+  })
   category: string;
 
   @IsString({ message: 'Detail must be a string.' })
-  @IsNotEmpty({ message: 'Detail should not be empty.' })
+  @IsOptional()
   detail: string;
 
-  @IsBoolean({ message: 'State must be a boolean value true/false.' })
-  state: boolean;
+  // File is sent as part of multipart/form-data and should be treated as optional.
+  @IsOptional()
+  file?: string;
 
-  @IsString({ message: 'File must be a string.' })
-  @IsNotEmpty({ message: 'File should not be empty.' })
-  file: string;
-
-  @IsDate({ message: 'Deadline must be a valid date.' })
+  @IsDateString()
   @IsOptional()
   deadline: Date;
 }

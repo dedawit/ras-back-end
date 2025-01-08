@@ -5,35 +5,44 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { User } from 'src/modules/user/persistence/user.entity';  // Adjust path if needed
+import { User } from 'src/modules/user/persistence/user.entity'; // Adjust path if needed
 
 @Entity('rfq')
 export class RFQ {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column({ type: 'varchar' })
   productName: string;
 
-  @Column({ type: 'int' })
+  @Column({ type: 'float' })
   quantity: number;
 
   @Column({ type: 'varchar' })
   category: string;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'text', nullable: true })
   detail: string;
 
   @Column({ type: 'boolean', default: true })
   state: boolean;
 
-  @Column({ type: 'varchar' })
+  @Column({ nullable: true })
   file: string;
 
-  @Column({ type: 'timestamp' })
+  @Column({ type: 'date', nullable: true })
   deadline: Date;
 
+  @Column({ type: 'timestamp' })
+  createdAt: Date;
+
+  // Many-to-One relationship with the User entity for buyer
   @ManyToOne(() => User, (user) => user.rfqs)
-  @JoinColumn({ name: 'user_id' })
-  user: User;
+  @JoinColumn({ name: 'buyerId' })
+  buyer: User;
+
+  // Many-to-One relationship with the User entity for seller
+  @ManyToOne(() => User, (user) => user.rfqsSeller)
+  @JoinColumn({ name: 'sellerId' })
+  seller: User;
 }
