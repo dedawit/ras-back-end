@@ -9,6 +9,7 @@ import { UserModule } from './modules/user/user.module';
 import { RFQModule } from './modules/rfq/rfq.module';
 
 import { AuthModule } from './modules/auth/auth.module';
+import { MulterModule } from '@nestjs/platform-express';
 
 @Module({
   imports: [
@@ -19,6 +20,9 @@ import { AuthModule } from './modules/auth/auth.module';
     UserModule,
     RFQModule,
     AuthModule,
+    MulterModule.register({
+      dest: './secured-storage', // Directory to store uploaded files
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,5 +1,4 @@
-import { Expose} from 'class-transformer';
-
+import { Expose } from 'class-transformer';
 
 export class RFQResponse {
   @Expose()
@@ -25,4 +24,7 @@ export class RFQResponse {
 
   @Expose()
   deadline: Date;
+
+  @Expose()
+  createdAt: Date;
 }
