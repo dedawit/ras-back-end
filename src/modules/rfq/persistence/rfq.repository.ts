@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { RFQ } from './rfq.entity';
@@ -44,10 +44,19 @@ export class RFQRepository {
   async getRFQById(id: string): Promise<RFQ> {
     return this.rfqRepository.findOne({ where: { id } });
   }
+  async updateRFQ(id: string, rfqDto: UpdateRFQDTO): Promise<RFQ> {
+    const existingRFQ = await this.rfqRepository.findOneOrFail({
+      where: { id },
+    });
+    if (!existingRFQ) {
+      throw new NotFoundException(`RFQ not found`);
+    }
 
-  async updateRFQ(rfqDto: UpdateRFQDTO): Promise<RFQ> {
-    return this.rfqRepository.save(rfqDto);
+    const updatedRFQ = Object.assign(existingRFQ, rfqDto);
+
+    return this.rfqRepository.save(updatedRFQ);
   }
+
   async findProductByName(productName: string): Promise<RFQ> {
     return this.rfqRepository.findOne({ where: { productName } });
   }
@@ -55,5 +64,27 @@ export class RFQRepository {
   //find all rfqs
   async findAllRFQs(buyerId: string): Promise<RFQ[]> {
     return this.rfqRepository.find({ where: { buyer: { id: buyerId } } });
+  }
+
+  async openRFQ(id: string): Promise<RFQ> {
+    const existingRFQ = await this.rfqRepository.findOneOrFail({
+      where: { id },
+    });
+    if (!existingRFQ) {
+      throw new NotFoundException(`RFQ not found`);
+    }
+    const updatedRFQ = Object.assign({}, existingRFQ, { state: true });
+    return await this.rfqRepository.save(updatedRFQ);
+  }
+
+  async closeRFQ(id: string): Promise<RFQ> {
+    const existingRFQ = await this.rfqRepository.findOneOrFail({
+      where: { id },
+    });
+    if (!existingRFQ) {
+      throw new NotFoundException(`RFQ not found`);
+    }
+    const updatedRFQ = Object.assign({}, existingRFQ, { state: false });
+    return await this.rfqRepository.save(updatedRFQ);
   }
 }

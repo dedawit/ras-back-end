@@ -17,6 +17,7 @@ import * as fs from 'fs';
 import { Multer } from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 import { extname } from 'path';
+import { Response } from 'express';
 
 @Injectable()
 export class RFQService {
@@ -103,6 +104,41 @@ export class RFQService {
     }
   }
 
+  // a method to download RFQ files
+  async downloadFile(
+    rfqId: string,
+    filename: string,
+    res: Response,
+  ): Promise<void> {
+    try {
+      const filePath = path.resolve(
+        __dirname,
+        './../../../../../src/',
+        'secured-storage',
+        'rfq',
+        rfqId,
+        filename,
+      );
+
+      await fs.promises.access(filePath);
+
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="${filename}"`,
+      );
+      res.setHeader('Content-Type', 'application/octet-stream');
+
+      res.sendFile(filePath, (err) => {
+        if (err) {
+          console.error('Error sending file:', err);
+          res.status(500).end();
+        }
+      });
+    } catch (error) {
+      throw new BadRequestException('File not found or inaccessible');
+    }
+  }
+
   async viewRFQ(id: string): Promise<RFQ> {
     const rfq = await this.rfqRepository.getRFQById(id);
     if (!rfq) {
@@ -113,60 +149,100 @@ export class RFQService {
 
   async editRFQ(
     id: string,
-    buyerId: string,
     rfqDto: UpdateRFQDTO,
+    file?: Multer.File, // Make file optional
   ): Promise<RFQ> {
-    const existingRFQ = await this.rfqRepository.getRFQById(id);
-    const user = await this.userRepository.findById(buyerId);
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
+    const existingRFQ = await this.viewRFQ(id);
     if (!existingRFQ) {
       throw new NotFoundException('RFQ not found');
     }
-    // if (existingRFQ.user.id !== user.id) {
-    //   throw new ForbiddenException('Only the creator of the RFQ can edit it');
-    // }
-    return this.rfqRepository.updateRFQ(rfqDto);
+
+    // Handle file updates
+    if (file != undefined) {
+      // Explicit check for undefined to distinguish from no-file case
+      // If there was a previous file, remove it
+      if (existingRFQ.file) {
+        const oldFilePath = path.resolve(
+          __dirname,
+          './../../../../../src/',
+          'secured-storage',
+          existingRFQ.file,
+        );
+        try {
+          await fs.promises.unlink(oldFilePath);
+        } catch (error) {
+          console.error('Error deleting old file:', error);
+          // Continue even if deletion fails (file might have been manually removed)
+        }
+      }
+
+      // If a new file is provided, process and store it
+      if (file) {
+        // File size validation (Max 10MB)
+        const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+        if (file.size > MAX_SIZE) {
+          throw new BadRequestException('File size must not exceed 10MB');
+        }
+
+        // File type validation
+        const allowedTypes = [
+          '.jpg',
+          '.jpeg',
+          '.png',
+          '.pdf',
+          '.docx',
+          '.doc',
+          '.xlsx',
+          '.xls',
+        ];
+        const ext = extname(file.originalname).toLowerCase();
+        if (!allowedTypes.includes(ext)) {
+          throw new BadRequestException(
+            'Invalid file type. Allowed types are: jpg, jpeg, png, pdf, docx, doc, xlsx, xls',
+          );
+        }
+
+        try {
+          // Use existing RFQ ID for storage path
+          const storagePath = path.resolve(
+            __dirname,
+            './../../../../../src/',
+            'secured-storage',
+            'rfq',
+            id,
+          );
+
+          // Ensure the directory exists
+          await fs.promises.mkdir(storagePath, { recursive: true });
+
+          // Save the new file
+          const filePath = path.join(storagePath, file.originalname);
+          await fs.promises.writeFile(filePath, file.buffer);
+
+          // Update rfqDto with new file path
+          rfqDto.file = `/rfq/${id}/${file.originalname}`;
+        } catch (error) {
+          console.error('Error saving file:', error);
+          throw new InternalServerErrorException('Failed to save file');
+        }
+      } else {
+        // If file is explicitly null, clear the file path
+        rfqDto.file = null;
+        console.log('is null');
+      }
+    }
+    // If file parameter wasn't provided, existing file remains unchanged
+
+    // Update the RFQ in the database
+    return this.rfqRepository.updateRFQ(id, rfqDto);
   }
 
-  async openRFQ(rfqId: string, buyerId: string): Promise<RFQ> {
-    const rfq = await this.rfqRepository.getRFQById(rfqId);
-    const user = await this.userRepository.findById(buyerId);
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-    if (user.lastRole !== Role.BUYER) {
-      throw new ForbiddenException('Only buyers can Open RFQs');
-    }
-    if (!rfq) {
-      throw new NotFoundException('RFQ not found');
-    }
-    // if (rfq.user.id !== user.id) {
-    //   throw new ForbiddenException('Only the creator of the RFQ can update it');
-    // }
-    rfq.state = true;
-    return this.rfqRepository.updateRFQ(rfq);
+  async openRFQ(rfqId: string): Promise<RFQ> {
+    return this.rfqRepository.openRFQ(rfqId);
   }
 
-  async closeRFQ(rfqId: string, buyerId: string): Promise<RFQ> {
-    const rfq = await this.rfqRepository.getRFQById(rfqId);
-    const user = await this.userRepository.findById(buyerId);
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-    if (user.lastRole !== Role.BUYER) {
-      throw new ForbiddenException('Only buyers can close RFQs');
-    }
-    if (!rfq) {
-      throw new NotFoundException('RFQ not found');
-    }
-    // if (rfq.user.id !== user.id) {
-    //   throw new ForbiddenException('Only the creator of the RFQ can close it');
-    // }
-    rfq.state = false;
-
-    return this.rfqRepository.updateRFQ(rfq);
+  async closeRFQ(rfqId: string): Promise<RFQ> {
+    return this.rfqRepository.closeRFQ(rfqId);
   }
 
   //find all RFQs by id

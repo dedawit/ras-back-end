@@ -8,6 +8,8 @@ import {
   UploadedFile,
   UseInterceptors,
   UseGuards,
+  Res,
+  Patch,
 } from '@nestjs/common';
 import { Multer } from 'multer';
 import { RFQService } from '../usecase/rfq.service';
@@ -22,6 +24,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { RoleGuard } from 'src/modules/common/guards/role.guard';
 import { Roles } from 'src/modules/common/roles.decorator';
 import { JwtAuthGuard } from 'src/modules/auth/guard/auth.guard';
+import { Response } from 'express';
 
 @Controller('rfq')
 export class RFQController {
@@ -43,6 +46,7 @@ export class RFQController {
 
   //get all rfqs
   @Get(':buyerId/view-all-rfqs')
+  @SerializeResponse(RFQResponse)
   @UseGuards(JwtAuthGuard)
   async findAllRFQs(@Param('buyerId') buyerId: string): Promise<RFQ[]> {
     return this.rfqService.findAllRFQs(buyerId);
@@ -54,31 +58,43 @@ export class RFQController {
     return this.rfqService.viewRFQ(id);
   }
 
-  @SerializeResponse(RFQResponse)
-  @Put(':rfqId/buyer/:buyerId/edit-rfq')
+  @UseInterceptors(RequestLoggingInterceptor)
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @UseInterceptors(FileInterceptor('file'))
+  @Patch(':rfqId/edit-rfq')
   async editRFQ(
     @Param('rfqId') rfqId: string,
-    @Param('buyerId') buyerId: string,
     @Body() rfqDto: UpdateRFQDTO,
+    @UploadedFile() file?: Multer.File,
   ): Promise<RFQ> {
-    return this.rfqService.editRFQ(rfqId, buyerId, rfqDto);
+    return this.rfqService.editRFQ(rfqId, rfqDto, file);
   }
 
   @SerializeResponse(RFQResponse)
-  @Put(':rfqId/open/buyer/:buyerId/open-rfq')
+  @Patch(':rfqId/open-rfq')
   async openRFQ(
     @Param('rfqId') rfqId: string,
     @Param('buyerId') buyerId: string,
   ): Promise<RFQ> {
-    return this.rfqService.openRFQ(rfqId, buyerId);
+    return this.rfqService.openRFQ(rfqId);
   }
 
   @SerializeResponse(RFQResponse)
-  @Put(':rfqId/close/buyer/:buyerId/close-rfq')
+  @Patch(':rfqId/close-rfq')
   async closeRFQ(
     @Param('rfqId') rfqId: string,
     @Param('buyerId') buyerId: string,
   ): Promise<RFQ> {
-    return this.rfqService.closeRFQ(rfqId, buyerId);
+    return this.rfqService.closeRFQ(rfqId);
+  }
+
+  //download RFQ
+  @Get(':rfqId/:filename')
+  async downloadFile(
+    @Param('rfqId') rfqId: string,
+    @Param('filename') filename: string,
+    @Res() res: Response,
+  ): Promise<void> {
+    return this.rfqService.downloadFile(rfqId, filename, res);
   }
 }
