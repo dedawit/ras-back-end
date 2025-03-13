@@ -14,23 +14,24 @@ export class UserRepository {
   async createUser(
     firstName: string,
     lastName: string,
-    companyName: string,
     telephone: string,
     email: string,
     password: string,
-    lastRole: Role,
     profile?: string,
+    lastRole?: Role,
+    companyName?: string,
   ): Promise<User> {
     const user = this.userRepository.create({
       firstName,
       lastName,
-      companyName,
       telephone,
       email,
       password,
-      lastRole,
       profile,
+      lastRole,
+      companyName,
     });
+
     return this.userRepository.save(user);
   }
 
@@ -42,7 +43,6 @@ export class UserRepository {
   async findByEmail(email: string): Promise<User> {
     return this.userRepository.findOne({ where: { email } });
   }
-
 
   // a method to store refresh token
   async storeRefreshToken(userId: string, refreshToken: string) {
@@ -57,5 +57,4 @@ export class UserRepository {
     Object.assign(user, { tokenVersion: user.tokenVersion + 1 });
     return this.userRepository.save(user);
   }
-
 }

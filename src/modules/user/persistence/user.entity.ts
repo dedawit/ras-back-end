@@ -13,7 +13,7 @@ export class User {
   @Column()
   lastName: string;
 
-  @Column()
+  @Column({ nullable: true })
   companyName: string;
 
   @Column()
@@ -25,7 +25,7 @@ export class User {
   @Column()
   password: string;
 
-  @Column({ type: 'enum', enum: Role })
+  @Column({ type: 'enum', enum: Role, nullable: true })
   lastRole: Role;
 
   @Column({ nullable: true })
