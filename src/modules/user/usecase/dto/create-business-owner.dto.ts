@@ -10,7 +10,7 @@ import {
 } from 'class-validator';
 import { Role } from '../../utility/enums/role.enum';
 
-export class CreateUserDto {
+export class CreateBusinessOwnerDto {
   @IsNotEmpty({ message: 'First name is required' })
   @IsString({ message: 'First name must be a string' })
   firstName: string;
@@ -40,4 +40,12 @@ export class CreateUserDto {
   @IsString({ message: 'Profile must be a string' })
   @IsOptional()
   profile?: string;
+
+  @IsEnum(Role, { message: 'Last role must be a valid role value' })
+  @IsNotEmpty()
+  lastRole: Role;
+
+  @IsString({ message: 'Company name must be a string' })
+  @IsNotEmpty()
+  companyName: string;
 }
