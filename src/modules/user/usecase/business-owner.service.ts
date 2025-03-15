@@ -15,7 +15,7 @@ export class BusinessOwnerService extends UserService {
     super(userService['userRepository']);
   }
 
-  public async createUser(
+  public async createAccount(
     createUserDto: CreateBusinessOwnerDto,
   ): Promise<User> {
     const {

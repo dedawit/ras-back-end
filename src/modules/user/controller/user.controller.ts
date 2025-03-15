@@ -16,6 +16,8 @@ export class UserController {
   @SerializeResponse(CreateUserResponseDto)
   @Post('create')
   async createUser(@Body() CreateBusinessOwnerDto: CreateBusinessOwnerDto) {
-    return await this.businessOwnerService.createUser(CreateBusinessOwnerDto);
+    return await this.businessOwnerService.createAccount(
+      CreateBusinessOwnerDto,
+    );
   }
 }

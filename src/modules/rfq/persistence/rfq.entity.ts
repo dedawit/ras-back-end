@@ -40,9 +40,4 @@ export class RFQ {
   @ManyToOne(() => User, (user) => user.rfqs)
   @JoinColumn({ name: 'buyerId' })
   buyer: User;
-
-  // Many-to-One relationship with the User entity for seller
-  @ManyToOne(() => User, (user) => user.rfqsSeller)
-  @JoinColumn({ name: 'sellerId' })
-  seller: User;
 }

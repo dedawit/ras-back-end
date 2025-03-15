@@ -52,6 +52,15 @@ export class RFQController {
     return this.rfqService.findAllRFQs(buyerId);
   }
 
+  //get all rfqs for sellers
+  @Get(':sellerId/seller/view-all-rfqs')
+  @Roles('seller')
+  @SerializeResponse(RFQResponse)
+  @UseGuards(JwtAuthGuard)
+  async findAllRFQsSeller(@Param('sellerId') sellerId: string): Promise<RFQ[]> {
+    return this.rfqService.findAllRFQsSeller(sellerId);
+  }
+
   @SerializeResponse(RFQResponse)
   @Get(':id/view-rfq')
   async viewRFQ(@Param('id') id: string): Promise<RFQ> {
