@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { RFQ } from './rfq.entity';
 import { createRFQDTO } from '../usecase/dto/create-rfq-dto';
 import { UpdateRFQDTO } from '../usecase/dto/update-rfq-dto';
@@ -64,6 +64,15 @@ export class RFQRepository {
   //find all rfqs
   async findAllRFQs(buyerId: string): Promise<RFQ[]> {
     return this.rfqRepository.find({ where: { buyer: { id: buyerId } } });
+  }
+
+  //find all rfqs for seller
+  async findAllRFQsSeller(sellerId: string): Promise<RFQ[]> {
+    return this.rfqRepository.find({
+      where: {
+        buyer: { id: Not(sellerId) },
+      },
+    });
   }
 
   async openRFQ(id: string): Promise<RFQ> {

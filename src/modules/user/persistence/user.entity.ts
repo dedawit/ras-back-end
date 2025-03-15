@@ -34,9 +34,6 @@ export class User {
   @OneToMany(() => RFQ, (rfq) => rfq.buyer)
   rfqs: RFQ[];
 
-  @OneToMany(() => RFQ, (rfq) => rfq.seller)
-  rfqsSeller: RFQ[];
-
   @Column({ nullable: true })
   refreshToken: string;
 

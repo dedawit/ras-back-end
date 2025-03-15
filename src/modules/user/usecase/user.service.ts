@@ -18,13 +18,12 @@ export class UserService {
   protected lastRole: Role;
   protected profile: string | null;
   protected rfqs: RFQ[];
-  protected rfqsSeller: RFQ[];
   protected refreshToken: string | null;
   protected tokenVersion: number;
 
   constructor(private readonly userRepository: UserRepository) {}
 
-  public async createUser(createUserDto: CreateUserDto): Promise<User> {
+  public async createAccount(createUserDto: CreateUserDto): Promise<User> {
     const { firstName, lastName, telephone, email, password, profile } =
       createUserDto;
 
@@ -95,7 +94,6 @@ export class UserService {
     this.lastRole = user.lastRole;
     this.profile = user.profile;
     this.rfqs = user.rfqs;
-    this.rfqsSeller = user.rfqsSeller;
     this.refreshToken = user.refreshToken;
     this.tokenVersion = user.tokenVersion;
   }
