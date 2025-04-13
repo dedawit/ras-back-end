@@ -1,29 +1,40 @@
 import { Expose } from 'class-transformer';
+import { Category } from '../../utility/enums/category.enum';
+import { RFQState } from '../../utility/enums/rfq-state.enum';
 
 export class RFQResponse {
   @Expose()
-  id: number;
+  id: string;
 
   @Expose()
-  productName: string;
+  title: string;
+
+  @Expose()
+  projectName: string;
+
+  @Expose()
+  purchaseNumber: string;
 
   @Expose()
   quantity: number;
 
   @Expose()
-  category: string;
+  category: Category;
 
   @Expose()
   detail: string;
 
   @Expose()
-  state: boolean;
+  auctionDoc: string;
 
   @Expose()
-  file: string;
+  guidelineDoc: string;
 
   @Expose()
   deadline: Date;
+
+  @Expose()
+  state: RFQState;
 
   @Expose()
   createdAt: Date;

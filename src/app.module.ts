@@ -10,6 +10,7 @@ import { RFQModule } from './modules/rfq/rfq.module';
 
 import { AuthModule } from './modules/auth/auth.module';
 import { MulterModule } from '@nestjs/platform-express';
+import { BidModule } from './modules/bid/bid.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { MulterModule } from '@nestjs/platform-express';
     MulterModule.register({
       dest: './secured-storage', // Directory to store uploaded files
     }),
+    BidModule,
   ],
   controllers: [AppController],
   providers: [AppService],
