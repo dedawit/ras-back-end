@@ -100,8 +100,10 @@ export class RFQRepository {
         createdBy: { id: Not(sellerId) },
       },
       relations: ['createdBy'], // Optional: include if buyer details are needed
-    });
-  }
+})}
+
+
+
 
   /**
    * Deletes an RFQ
