@@ -1,6 +1,13 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  CreateDateColumn,
+} from 'typeorm';
 import { Role } from '../utility/enums/role.enum';
 import { RFQ } from 'src/modules/rfq/persistence/rfq.entity'; // Adjust path if needed
+import { Bid } from 'src/modules/bid/persistence/bid.entity';
 
 @Entity('user')
 export class User {
@@ -31,12 +38,21 @@ export class User {
   @Column({ nullable: true })
   profile: string;
 
-  @OneToMany(() => RFQ, (rfq) => rfq.buyer)
+  @OneToMany(() => RFQ, (rfq) => rfq.createdBy)
   rfqs: RFQ[];
+
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt: Date;
+
+  @Column({ default: true })
+  isActive: boolean;
 
   @Column({ nullable: true })
   refreshToken: string;
 
   @Column({ default: 0 })
   tokenVersion: number;
+
+  @OneToMany(() => Bid, (bid) => bid.createdBy)
+  bids: Bid[];
 }

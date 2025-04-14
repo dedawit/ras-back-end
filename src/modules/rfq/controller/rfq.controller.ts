@@ -10,21 +10,26 @@ import {
   UseGuards,
   Res,
   Patch,
+  UploadedFiles,
+  Delete,
 } from '@nestjs/common';
-import { Multer } from 'multer';
 import { RFQService } from '../usecase/rfq.service';
-import { createRFQDTO } from '../usecase/dto/create-rfq-dto';
+import { CreateRFQDTO } from '../usecase/dto/create-rfq-dto';
 import { UpdateRFQDTO } from '../usecase/dto/update-rfq-dto';
 import { RFQ } from '../persistence/rfq.entity';
 import { SerializeResponse } from 'src/modules/common/serialize-response.decorator';
 import { RFQResponse } from '../usecase/dto/rfq-response.dto';
 import { RequestLoggingInterceptor } from 'src/modules/common/request-logging.interceptor';
-import { FileInterceptor } from '@nestjs/platform-express';
+import {
+  FileFieldsInterceptor,
+  FileInterceptor,
+} from '@nestjs/platform-express';
 import { AuthGuard } from '@nestjs/passport';
 import { RoleGuard } from 'src/modules/common/guards/role.guard';
 import { Roles } from 'src/modules/common/roles.decorator';
 import { JwtAuthGuard } from 'src/modules/auth/guard/auth.guard';
 import { Response } from 'express';
+import { Multer } from 'multer';
 
 @Controller('rfq')
 export class RFQController {
@@ -34,14 +39,23 @@ export class RFQController {
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Roles('buyer')
   @UseInterceptors(RequestLoggingInterceptor)
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'auctionDoc', maxCount: 1 },
+      { name: 'guidelineDoc', maxCount: 1 },
+    ]),
+  )
   @Post('buyer/:buyerId/create-rfq')
   async createRFQ(
     @Param('buyerId') buyerId: string,
-    @Body() rfqDto: createRFQDTO,
-    @UploadedFile() file?: Multer.File,
+    @Body() rfqDto: CreateRFQDTO,
+    @UploadedFiles()
+    files: {
+      auctionDoc: Express.Multer.File[];
+      guidelineDoc: Express.Multer.File[];
+    },
   ): Promise<RFQ> {
-    return this.rfqService.createRFQ(buyerId, rfqDto, file);
+    return this.rfqService.createRFQ(buyerId, rfqDto, files);
   }
 
   //get all rfqs
@@ -69,32 +83,37 @@ export class RFQController {
 
   @UseInterceptors(RequestLoggingInterceptor)
   @UseGuards(JwtAuthGuard, RoleGuard)
-  @UseInterceptors(FileInterceptor('file'))
+  @Roles('buyer')
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'auctionDoc', maxCount: 1 },
+      { name: 'guidelineDoc', maxCount: 1 },
+    ]),
+  )
   @Patch(':rfqId/edit-rfq')
   async editRFQ(
     @Param('rfqId') rfqId: string,
     @Body() rfqDto: UpdateRFQDTO,
-    @UploadedFile() file?: Multer.File,
+    @UploadedFiles()
+    files: {
+      auctionDoc?: Express.Multer.File[];
+      guidelineDoc?: Express.Multer.File[];
+    },
   ): Promise<RFQ> {
-    return this.rfqService.editRFQ(rfqId, rfqDto, file);
+    const auctionDocFile = files.auctionDoc?.[0]; // Optional chaining since files are optional
+    const guidelineDocFile = files.guidelineDoc?.[0];
+    return this.rfqService.editRFQ(
+      rfqId,
+      rfqDto,
+      auctionDocFile,
+      guidelineDocFile,
+    );
   }
 
   @SerializeResponse(RFQResponse)
-  @Patch(':rfqId/open-rfq')
-  async openRFQ(
-    @Param('rfqId') rfqId: string,
-    @Param('buyerId') buyerId: string,
-  ): Promise<RFQ> {
-    return this.rfqService.openRFQ(rfqId);
-  }
-
-  @SerializeResponse(RFQResponse)
-  @Patch(':rfqId/close-rfq')
-  async closeRFQ(
-    @Param('rfqId') rfqId: string,
-    @Param('buyerId') buyerId: string,
-  ): Promise<RFQ> {
-    return this.rfqService.closeRFQ(rfqId);
+  @Delete(':rfqId/delete-rfq')
+  async closeRFQ(@Param('rfqId') rfqId: string): Promise<RFQ> {
+    return this.rfqService.deleteRFQ(rfqId);
   }
 
   //download RFQ

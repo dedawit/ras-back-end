@@ -4,40 +4,65 @@ import {
   PrimaryGeneratedColumn,
   ManyToOne,
   JoinColumn,
+  CreateDateColumn,
+  DeleteDateColumn,
+  OneToMany,
 } from 'typeorm';
 import { User } from 'src/modules/user/persistence/user.entity'; // Adjust path if needed
+import { RFQState } from '../utility/enums/rfq-state.enum';
+import { Bid } from 'src/modules/bid/persistence/bid.entity';
 
 @Entity('rfq')
 export class RFQ {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'varchar' })
-  productName: string;
+  @Column()
+  title: string;
+
+  @Column()
+  projectName: string;
+
+  @Column()
+  purchaseNumber: string;
 
   @Column({ type: 'float' })
   quantity: number;
 
-  @Column({ type: 'varchar' })
+  @Column()
   category: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ nullable: true })
   detail: string;
 
-  @Column({ type: 'boolean', default: true })
-  state: boolean;
+  @Column({
+    type: 'enum',
+    enum: RFQState,
+    default: RFQState.OPENED,
+  })
+  state: RFQState;
 
-  @Column({ nullable: true })
-  file: string;
+  @Column()
+  auctionDoc: string;
 
-  @Column({ type: 'date', nullable: true })
+  @Column()
+  guidelineDoc: string;
+
+  @Column()
   deadline: Date;
-
-  @Column({ type: 'timestamp' })
-  createdAt: Date;
 
   // Many-to-One relationship with the User entity for buyer
   @ManyToOne(() => User, (user) => user.rfqs)
   @JoinColumn({ name: 'buyerId' })
+  createdBy: User;
+
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt: Date;
+
+  @DeleteDateColumn({ name: 'deleted_at' })
+  deletedAt: Date;
+
+  @OneToMany(() => Bid, (bid) => bid.rfq)
+  bids: Bid[];
   buyer: User;
 }

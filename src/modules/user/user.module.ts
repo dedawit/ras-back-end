@@ -4,20 +4,13 @@ import { UserService } from './usecase/user.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './persistence/user.entity';
 import { UserRepository } from './persistence/user.repository';
-import { BuyerService } from './usecase/buyer.service';
-import { SellerService } from './usecase/seller.service';
+
 import { BusinessOwnerService } from './usecase/business-owner.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User])],
   controllers: [UserController],
-  providers: [
-    UserService,
-    UserRepository,
-    BuyerService,
-    SellerService,
-    BusinessOwnerService,
-  ],
+  providers: [UserService, UserRepository, BusinessOwnerService],
 
   exports: [UserService, UserRepository],
 })
