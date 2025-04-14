@@ -54,13 +54,26 @@ export class RFQRepository {
   /**
    * Retrieves an RFQ by purchaseNumber
    */
-  async getRFQByPurchaseNumber(purchaseNumber: string): Promise<RFQ> {
+  async getRFQByPurchaseNumber(purchaseNumber: string) {
     const rfq = await this.rfqRepository.findOne({
       where: { purchaseNumber },
       relations: ['createdBy'], // Load buyer relation if needed
     });
-
     return rfq;
+  }
+
+  //find all rfqs
+  async findAllRFQs(buyerId: string): Promise<RFQ[]> {
+    return this.rfqRepository.find({ where: { buyer: { id: buyerId } } });
+  }
+
+  //find all rfqs for seller
+  async findAllRFQsSeller(sellerId: string): Promise<RFQ[]> {
+    return this.rfqRepository.find({
+      where: {
+        buyer: { id: Not(sellerId) },
+      },
+    });
   }
 
   /**
@@ -79,28 +92,6 @@ export class RFQRepository {
       guidelineDoc,
     }); // Merges DTO into entity
     return this.rfqRepository.save(existingRFQ);
-  }
-
-  /**
-   * Finds all RFQs for a buyer
-   */
-  async findAllRFQs(createdBy: string): Promise<RFQ[]> {
-    return this.rfqRepository.find({
-      where: { createdBy: { id: createdBy } },
-      relations: ['createdBy'],
-    });
-  }
-
-  /**
-   * Finds all RFQs not owned by a seller (for sellers to view)
-   */
-  async findAllRFQsSeller(sellerId: string): Promise<RFQ[]> {
-    return this.rfqRepository.find({
-      where: {
-        createdBy: { id: Not(sellerId) },
-      },
-      relations: ['createdBy'], // Optional: include if buyer details are needed
-    });
   }
 
   /**
