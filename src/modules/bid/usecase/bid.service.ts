@@ -17,6 +17,9 @@ import { RFQService } from 'src/modules/rfq/usecase/rfq.service';
 import { UserService } from 'src/modules/user/usecase/user.service';
 import { CreateBidDTO } from './dto/create-bid.dto';
 import { UpdateBidDTO } from './dto/update-bid.dto';
+import { BidState } from './utility/bid-state.enum';
+import { RFQRepository } from 'src/modules/rfq/persistence/rfq.repository';
+import { RFQState } from 'src/modules/rfq/utility/enums/rfq-state.enum';
 
 @Injectable()
 export class BidService {
@@ -33,7 +36,29 @@ export class BidService {
     private readonly bidItemService: BidItemService,
     private readonly rfqService: RFQService,
     private readonly userService: UserService,
+    private readonly rfqRepository: RFQRepository,
+    
   ) {}
+
+async awardBid(bidId: string): Promise<string> {
+    const bid = await this.bidRepository.updateBidStatus(bidId, BidState.AWARDED);
+
+    if (!bid) throw new NotFoundException('Bid not found or invalid');
+
+    if (bid.rfq) {
+      await this.rfqRepository.updateRFQStatus(bid.rfq.id, RFQState.AWARDED);
+    }
+
+    return 'Bid awarded and RFQ updated successfully.';
+  }
+
+  async rejectBid(bidId: string): Promise<string> {
+    const bid = await this.bidRepository.updateBidStatus(bidId, BidState.REJECTED);
+
+    if (!bid) throw new NotFoundException('Bid not found or invalid');
+
+    return 'Bid rejected successfully.';
+  }
 
   /**
    * Generates a unique bidId by checking the database

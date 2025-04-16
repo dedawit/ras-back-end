@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Not, Repository } from 'typeorm';
+import { LessThan, Not, Repository } from 'typeorm';
 import { RFQ } from './rfq.entity';
 import { CreateRFQDTO } from '../usecase/dto/create-rfq-dto';
 import { UpdateRFQDTO } from '../usecase/dto/update-rfq-dto';
@@ -13,6 +13,40 @@ export class RFQRepository {
     @InjectRepository(RFQ)
     private readonly rfqRepository: Repository<RFQ>,
   ) {}
+
+  async updateRFQStatus(id: string, state: string): Promise<RFQ> {
+    const rfq = await this.getRFQById(id);
+    if (!rfq) {
+      throw new NotFoundException(`RFQ with ID ${id} not found`);
+    }
+  
+    const stateMap: Record<string, RFQState> = {
+      opened: RFQState.OPENED,
+      closed: RFQState.CLOSED,
+      awarded: RFQState.AWARDED,
+    };
+  
+    const newState = stateMap[state.toLowerCase()];
+    if (!newState) {
+      return null;
+    }
+  
+    rfq.state = newState;
+    await this.rfqRepository.save(rfq);
+    return rfq;
+  }
+  
+
+  async findExpiredRFQs(now: Date): Promise<RFQ[]> {
+    const expiredRFQs = await this.rfqRepository.find({
+      where: {
+        deadline: LessThan(now),
+        state: RFQState.OPENED,
+      },
+      relations: ['bids'], 
+    });
+    return expiredRFQs;
+  }
 
   /**
    * Creates a new RFQ
@@ -109,5 +143,5 @@ export class RFQRepository {
     const rfq = await this.getRFQById(id);
     rfq.deletedAt = new Date();
     return this.rfqRepository.save(rfq);
-  }
+  }  
 }

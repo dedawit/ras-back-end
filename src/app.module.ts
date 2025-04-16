@@ -11,9 +11,11 @@ import { RFQModule } from './modules/rfq/rfq.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { MulterModule } from '@nestjs/platform-express';
 import { BidModule } from './modules/bid/bid.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
     }),
