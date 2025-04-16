@@ -17,6 +17,10 @@ import { extname } from 'path';
 import { Response } from 'express';
 import { Category } from '../utility/enums/category.enum';
 import { RFQState } from '../utility/enums/rfq-state.enum';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { LessThan } from 'typeorm';
+import { BidRepository } from 'src/modules/bid/persistence/bid.repository';
+import { BidState } from 'src/modules/bid/usecase/utility/bid-state.enum';
 
 @Injectable()
 export class RFQService {
@@ -37,7 +41,29 @@ export class RFQService {
   constructor(
     private readonly rfqRepository: RFQRepository,
     private readonly userRepository: UserRepository,
+    private readonly bidRepository: BidRepository,
   ) {}
+
+  @Cron(CronExpression.EVERY_MINUTE) 
+  async closeExpiredRFQs() {
+    const now = new Date();
+
+    const expiredRFQs = await this.rfqRepository.findExpiredRFQs(now)
+
+    if (expiredRFQs.length > 0) {
+      for (const rfq of expiredRFQs) {
+        await this.rfqRepository.updateRFQStatus(rfq.id, RFQState.CLOSED);
+
+        if (rfq.bids && rfq.bids.length > 0) {
+          for (const bid of rfq.bids) {
+            await this.bidRepository.updateBidStatus(bid.id,BidState.CLOSED);
+          }
+        }
+      }
+      
+      }
+  }
+
 
   private async generateUniqueRFQId(): Promise<string> {
     let rfqId: string;
