@@ -136,4 +136,5 @@ export class BidController {
   async rejectBid(@Param('bidId') bidId: string) {
     return this.bidService.rejectBid(bidId);
   }
+
 }

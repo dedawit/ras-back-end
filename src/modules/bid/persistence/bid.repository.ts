@@ -6,8 +6,10 @@ import { Bid } from './bid.entity'; // Adjust path if needed
 import { User } from 'src/modules/user/persistence/user.entity'; // Adjust path
 import { UpdateBidDTO } from '../usecase/dto/update-bid.dto';
 import { BidState } from '../usecase/utility/bid-state.enum';
+
 import { BidItem } from './bit-item.entity';
 import { BidItemService } from '../usecase/bid-item.service';
+
 
 @Injectable()
 export class BidRepository {
@@ -28,6 +30,7 @@ export class BidRepository {
       opened: BidState.OPENED,
     };
 
+
     const newState = statusMap[status.toLowerCase()];
     if (!newState) return null;
 
@@ -35,6 +38,7 @@ export class BidRepository {
     await this.bidRepository.save(bid);
     return bid;
   }
+
 
   /**
    * Creates a new Bid
