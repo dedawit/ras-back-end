@@ -122,4 +122,19 @@ export class BidController {
     const bidFilesFile = files.bidFiles?.[0];
     return this.bidService.editBid(id, bidDto, bidFilesFile);
   }
+
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles('buyer')
+  @Patch('buyer/:bidId/award')
+  async awardBid(@Param('bidId') bidId: string) {
+    return this.bidService.awardBid(bidId);
+  }
+  
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles('buyer')
+  @Patch('buyer/:bidId/reject')
+  async rejectBid(@Param('bidId') bidId: string) {
+    return this.bidService.rejectBid(bidId);
+  }
+  
 }

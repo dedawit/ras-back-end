@@ -5,6 +5,7 @@ import { Bid } from './bid.entity'; // Adjust path if needed
 
 import { User } from 'src/modules/user/persistence/user.entity'; // Adjust path
 import { UpdateBidDTO } from '../usecase/dto/update-bid.dto';
+import { BidState } from '../usecase/utility/bid-state.enum';
 
 @Injectable()
 export class BidRepository {
@@ -12,6 +13,26 @@ export class BidRepository {
     @InjectRepository(Bid)
     private readonly bidRepository: Repository<Bid>,
   ) {}
+
+  async updateBidStatus(bidId: string, status: string): Promise<Bid> {
+    const bid = await this.getBidById(bidId);
+    if (!bid) return null;
+  
+    const statusMap: Record<string, BidState> = {
+      awarded: BidState.AWARDED,
+      rejected: BidState.REJECTED,
+      closed: BidState.CLOSED,
+      opened: BidState.OPENED,
+    };
+  
+    const newState = statusMap[status.toLowerCase()];
+    if (!newState) return null;
+  
+    bid.state = newState;
+    await this.bidRepository.save(bid);
+    return bid;
+  }
+  
 
   /**
    * Creates a new Bid
