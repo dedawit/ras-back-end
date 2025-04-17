@@ -3,6 +3,8 @@ import {
   NotFoundException,
   BadRequestException,
   InternalServerErrorException,
+  forwardRef,
+  Inject,
 } from '@nestjs/common';
 import { BidItemRepository } from '../persistence/bid-item.repository'; // Adjust path
 import { BidRepository } from '../persistence/bid.repository'; // Adjust path
@@ -26,6 +28,8 @@ export class BidItemService {
 
   constructor(
     private readonly bidItemRepository: BidItemRepository,
+
+    @Inject(forwardRef(() => BidRepository))
     private readonly bidRepository: BidRepository,
   ) {}
 

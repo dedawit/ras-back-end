@@ -6,33 +6,35 @@ import { Bid } from './bid.entity'; // Adjust path if needed
 import { User } from 'src/modules/user/persistence/user.entity'; // Adjust path
 import { UpdateBidDTO } from '../usecase/dto/update-bid.dto';
 import { BidState } from '../usecase/utility/bid-state.enum';
+import { BidItem } from './bit-item.entity';
+import { BidItemService } from '../usecase/bid-item.service';
 
 @Injectable()
 export class BidRepository {
   constructor(
     @InjectRepository(Bid)
     private readonly bidRepository: Repository<Bid>,
+    private readonly bidItemService: BidItemService,
   ) {}
 
   async updateBidStatus(bidId: string, status: string): Promise<Bid> {
     const bid = await this.getBidById(bidId);
     if (!bid) return null;
-  
+
     const statusMap: Record<string, BidState> = {
       awarded: BidState.AWARDED,
       rejected: BidState.REJECTED,
       closed: BidState.CLOSED,
       opened: BidState.OPENED,
     };
-  
+
     const newState = statusMap[status.toLowerCase()];
     if (!newState) return null;
-  
+
     bid.state = newState;
     await this.bidRepository.save(bid);
     return bid;
   }
-  
 
   /**
    * Creates a new Bid
@@ -70,21 +72,40 @@ export class BidRepository {
     return bid;
   }
 
-  /**
-   * Updates an existing Bid
-   */
   async updateBid(
     id: string,
     bidDto: UpdateBidDTO,
     files: string,
   ): Promise<Bid> {
-    const existingBid = await this.getBidById(id); // Reuses viewBid for consistency
-    this.bidRepository.merge(existingBid, {
+    const existingBid = await this.getBidById(id);
+
+    // Step 1: Delete existing bid items
+    const existingBidItems = existingBid.bidItems;
+    for (const item of existingBidItems) {
+      await this.bidItemService.deleteBidItem(item.id);
+    }
+
+    // Step 2: Add new bid items
+    const newBidItems: BidItem[] = [];
+    for (const bidItemDto of bidDto.bidItems) {
+      const validatedItem = await this.bidItemService.addBidItem(
+        id,
+        bidItemDto,
+      );
+      newBidItems.push(validatedItem);
+    }
+
+    // Step 3: Use Object.assign to update existingBid with new values
+    Object.assign(existingBid, {
       ...bidDto,
+      bidItems: newBidItems,
       files,
-    }); // Merges DTO into entity
+    });
+
+    // Step 4: Save the updated bid
     return this.bidRepository.save(existingBid);
   }
+
   /**
    * Finds all Bids for a specific RFQ
    */
