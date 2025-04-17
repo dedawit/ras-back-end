@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { BidController } from './controller/bid.controller';
 import { BidService } from './usecase/bid.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -11,8 +11,13 @@ import { BidRepository } from './persistence/bid.repository';
 import { BidItemRepository } from './persistence/bid-item.repository';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Bid, BidItem]), UserModule, RFQModule],
+  imports: [
+    TypeOrmModule.forFeature([Bid, BidItem]),
+    UserModule,
+    forwardRef(() => RFQModule),
+  ],
   providers: [BidService, BidItemService, BidRepository, BidItemRepository],
   controllers: [BidController],
+  exports: [BidService, BidRepository],
 })
 export class BidModule {}

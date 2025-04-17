@@ -54,7 +54,7 @@ export class BidController {
   /**
    * Get all Bids for an RFQ
    */
-  @SerializeResponse(BidResponse)
+  // @SerializeResponse(BidResponse)
   @UseGuards(JwtAuthGuard)
   @Get('rfq/:rfqId/view-all-bids')
   async findBidsByRFQ(@Param('rfqId') rfqId: string): Promise<Bid[]> {
@@ -129,12 +129,12 @@ export class BidController {
   async awardBid(@Param('bidId') bidId: string) {
     return this.bidService.awardBid(bidId);
   }
-  
+
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Roles('buyer')
   @Patch('buyer/:bidId/reject')
   async rejectBid(@Param('bidId') bidId: string) {
     return this.bidService.rejectBid(bidId);
   }
-  
+
 }

@@ -37,11 +37,11 @@ export class BidService {
     private readonly rfqService: RFQService,
     private readonly userService: UserService,
     private readonly rfqRepository: RFQRepository,
-    
-  ) {}
+
 
 async awardBid(bidId: string): Promise<string> {
     const bid = await this.bidRepository.updateBidStatus(bidId, BidState.AWARDED);
+
 
     if (!bid) throw new NotFoundException('Bid not found or invalid');
 
@@ -53,7 +53,14 @@ async awardBid(bidId: string): Promise<string> {
   }
 
   async rejectBid(bidId: string): Promise<string> {
+
+    const bid = await this.bidRepository.updateBidStatus(
+      bidId,
+      BidState.REJECTED,
+    );
+
     const bid = await this.bidRepository.updateBidStatus(bidId, BidState.REJECTED);
+
 
     if (!bid) throw new NotFoundException('Bid not found or invalid');
 
@@ -340,6 +347,8 @@ async awardBid(bidId: string): Promise<string> {
         bidDto,
         newBidFilesPath || existingBid.files,
       );
+      console.log('debug', updatedBid);
+
       this.syncWithBid(updatedBid); // Assuming a sync method exists
       return updatedBid;
     } catch (error) {
