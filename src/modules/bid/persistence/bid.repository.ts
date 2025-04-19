@@ -10,7 +10,6 @@ import { BidState } from '../usecase/utility/bid-state.enum';
 import { BidItem } from './bit-item.entity';
 import { BidItemService } from '../usecase/bid-item.service';
 
-
 @Injectable()
 export class BidRepository {
   constructor(
@@ -30,7 +29,6 @@ export class BidRepository {
       opened: BidState.OPENED,
     };
 
-
     const newState = statusMap[status.toLowerCase()];
     if (!newState) return null;
 
@@ -38,7 +36,6 @@ export class BidRepository {
     await this.bidRepository.save(bid);
     return bid;
   }
-
 
   /**
    * Creates a new Bid
@@ -137,5 +134,17 @@ export class BidRepository {
     const bid = await this.getBidById(id);
     bid.deletedAt = new Date();
     return this.bidRepository.save(bid);
+  }
+
+  //reject other bids
+  async rejectOtherBids(rfqId: string, awardedBidId: string): Promise<void> {
+    await this.bidRepository
+      .createQueryBuilder()
+      .update()
+      .set({ state: BidState.REJECTED })
+      .where('rfqId = :rfqId', { rfqId })
+      .andWhere('id != :awardedBidId', { awardedBidId })
+      .andWhere('state != :awardedState', { awardedState: BidState.AWARDED })
+      .execute();
   }
 }

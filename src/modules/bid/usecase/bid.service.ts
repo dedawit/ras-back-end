@@ -49,9 +49,11 @@ export class BidService {
 
     if (bid.rfq) {
       await this.rfqRepository.updateRFQStatus(bid.rfq.id, RFQState.AWARDED);
+
+      await this.bidRepository.rejectOtherBids(bid.rfq.id, bid.id);
     }
 
-    return 'Bid awarded and RFQ updated successfully.';
+    return 'Bid awarded, RFQ updated, and other bids rejected successfully.';
   }
 
   async rejectBid(bidId: string): Promise<string> {
