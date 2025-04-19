@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Chapa Payment Callback Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        pre {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        .success {
+            color: green;
+        }
+
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Chapa Payment Callback Test</h1>
+    <div id="results">
+        <p>Waiting for callback...</p>
+    </div>
+
+    <script>
+        // Function to parse URL parameters
+        function getUrlParams() {
+            const params = {};
+            const queryString = window.location.search.substring(1);
+            const pairs = queryString.split('&');
+
+            pairs.forEach(pair => {
+                const [key, value] = pair.split('=');
+                params[key] = decodeURIComponent(value);
+            });
+
+            return params;
+        }
+
+        // Display the callback data
+        function displayCallbackData() {
+            const params = getUrlParams();
+            const resultsDiv = document.getElementById('results');
+
+            if (Object.keys(params).length === 0) {
+                resultsDiv.innerHTML = '<p class="error">No callback parameters received</p>';
+                return;
+            }
+
+            let html = '<h2>Callback Parameters Received:</h2><pre>';
+            html += JSON.stringify(params, null, 2);
+            html += '</pre>';
+
+            // Add a button to verify payment with your backend
+            html += `
+                <button onclick="verifyPayment()">Verify Payment with Backend</button>
+                <div id="verificationResult"></div>
+            `;
+
+            resultsDiv.innerHTML = html;
+        }
+
+        // Verify payment with your backend
+        async function verifyPayment() {
+            const params = getUrlParams();
+            const resultDiv = document.getElementById('verificationResult');
+
+            if (!params.trx_ref) {
+                resultDiv.innerHTML = '<p class="error">No transaction reference found</p>';
+                return;
+            }
+
+            try {
+                resultDiv.innerHTML = '<p>Verifying payment...</p>';
+
+                const response = await fetch(`http://localhost:3000/payment/verify?trx_ref=${params.trx_ref}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <p class="success">Verification successful!</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <p class="error">Verification failed</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            }
+        }
+
+        // Initialize when page loads
+        window.onload = displayCallbackData;
+    </script>
+</body>
+
+</html>

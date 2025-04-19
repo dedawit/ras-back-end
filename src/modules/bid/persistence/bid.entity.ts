@@ -9,9 +9,11 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   OneToMany,
+  OneToOne,
 } from 'typeorm';
 import { BidItem } from './bit-item.entity';
 import { BidState } from '../usecase/utility/bid-state.enum';
+import { Transaction } from 'src/modules/transaction/persistence/transaction.entity';
 
 @Entity('bid')
 export class Bid {
@@ -47,4 +49,7 @@ export class Bid {
     default: BidState.OPENED,
   })
   state: BidState;
+
+  @OneToOne(() => Transaction, (transaction) => transaction.bid)
+  transaction: Transaction;
 }

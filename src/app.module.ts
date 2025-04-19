@@ -12,6 +12,8 @@ import { AuthModule } from './modules/auth/auth.module';
 import { MulterModule } from '@nestjs/platform-express';
 import { BidModule } from './modules/bid/bid.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { PaymentModule } from './modules/payment/payment.module';
+import { TransactionModule } from './modules/transaction/transaction.module';
 
 @Module({
   imports: [
@@ -27,6 +29,8 @@ import { ScheduleModule } from '@nestjs/schedule';
       dest: './secured-storage', // Directory to store uploaded files
     }),
     BidModule,
+    TransactionModule,
+    PaymentModule,
   ],
   controllers: [AppController],
   providers: [AppService],
