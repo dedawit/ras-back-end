@@ -40,12 +40,21 @@ export class BidService {
   ) {}
 
   async awardBid(bidId: string): Promise<string> {
+    const bidData = await this.getBid(bidId);
+    if (!bidData) throw new NotFoundException('Bid not found or invalid');
+    if (bidData.rfq.state === RFQState.AWARDED) {
+      throw new BadRequestException('RFQ is already awarded');
+    }
+    if (bidData.rfq.state === RFQState.OPENED) {
+      throw new BadRequestException('RFQ is not closed for awarding bids');
+    }
+
     const bid = await this.bidRepository.updateBidStatus(
       bidId,
       BidState.AWARDED,
     );
 
-    if (!bid) throw new NotFoundException('Bid not found or invalid');
+    // if (!bid) throw new NotFoundException('Bid not found or invalid');
 
     if (bid.rfq) {
       await this.rfqRepository.updateRFQStatus(bid.rfq.id, RFQState.AWARDED);
@@ -100,6 +109,9 @@ export class BidService {
     const rfq = await this.rfqService.viewRFQ(bidDto.rfqId);
     if (!rfq) {
       throw new NotFoundException(`RFQ with ID ${bidDto.rfqId} not found`);
+    }
+    if (rfq.state !== RFQState.OPENED) {
+      throw new BadRequestException('RFQ is not open for bidding');
     }
 
     const bidFilesFile = files?.bidFiles?.[0];

@@ -18,11 +18,11 @@ export class Transaction {
   @Column()
   transactionId: string;
 
-  @OneToOne(() => Bid, (bid) => bid.transaction)
+  @ManyToOne(() => Bid, (bid) => bid.transactions)
   @JoinColumn({ name: 'bidId' })
   bid: Bid;
 
-  @OneToOne(() => Payment, (payment) => payment.transaction, {
+  @ManyToOne(() => Payment, (payment) => payment.transactions, {
     nullable: true,
   })
   @JoinColumn({ name: 'paymentId' })

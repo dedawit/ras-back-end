@@ -40,8 +40,15 @@ export class TransactionService {
     if (!bid) {
       throw new NotFoundException(`Bid with ID ${bidId} not found`);
     }
-    const existingTrasaction =
-      await this.transactionRepository.getTransactionById(transactionId);
+    // Check if the bid already has any transactions
+    // if (bid.transactions && bid.transactions.length > 0) {
+    //   throw new ConflictException('A transaction already exists for this bid');
+    // }
+    const existingTrasaction = await this.getTransactionByIdAndUser(
+      transactionId,
+      userId,
+    );
+    console.log(existingTrasaction, 'existingTrasaction');
     if (existingTrasaction) {
       throw new ConflictException('Transaction identifier already exists');
     }
@@ -51,6 +58,7 @@ export class TransactionService {
     const email = user.email;
     const firstName = user.firstName;
     const lastName = user.lastName;
+    const phoneNumber = user.telephone; // Optional, as it’s not always required
 
     const payment = await this.paymentService.initializeChapaPayment(
       transactionId,
@@ -58,6 +66,8 @@ export class TransactionService {
       email,
       firstName,
       lastName,
+      bidId,
+      phoneNumber,
     );
     const transaction = await this.transactionRepository.makeTransaction(
       transactionId,
@@ -71,6 +81,61 @@ export class TransactionService {
   // a method to add payment to trasaction
   async addPayment(id: string, paymentId: string) {
     return this.transactionRepository.addPayment(id, paymentId);
+  }
+
+  // a method to get transaction by id
+  async getTransactionById(id: string): Promise<Transaction> {
+    const transaction = await this.transactionRepository.getTransactionById(id);
+    if (!transaction) {
+      throw new NotFoundException(`Transaction with ID ${id} not found`);
+    }
+    return transaction;
+  }
+  // a method to get transaction by db id
+  async getTrasactionByDbId(id: string): Promise<Transaction> {
+    const transaction =
+      await this.transactionRepository.getTrasactionByDbId(id);
+    if (!transaction) {
+      throw new NotFoundException(`Transaction with ID ${id} not found`);
+    }
+    return transaction;
+  }
+
+  // a method to get transaction by id
+  async getTransactionByIdAndUser(
+    id: string,
+    userId: string,
+  ): Promise<Transaction> {
+    const transaction = await this.transactionRepository.getTransactionByUserId(
+      id,
+      userId,
+    );
+
+    return transaction;
+  }
+
+  // Get all transactions for a Buyer
+  async getAllTransactionsByBuyerId(buyerId: string): Promise<Transaction[]> {
+    const transactions =
+      await this.transactionRepository.getAllTransactionsByBuyerId(buyerId);
+    if (!transactions || transactions.length === 0) {
+      throw new NotFoundException(
+        `No transactions found for Buyer ID ${buyerId}`,
+      );
+    }
+    return transactions;
+  }
+
+  // Get all transactions for a Seller
+  async getAllTransactionsBySellerId(sellerId: string): Promise<Transaction[]> {
+    const transactions =
+      await this.transactionRepository.getAllTransactionsBySellerId(sellerId);
+    if (!transactions || transactions.length === 0) {
+      throw new NotFoundException(
+        `No transactions found for Seller ID ${sellerId}`,
+      );
+    }
+    return transactions;
   }
 
   /**

@@ -64,5 +64,4 @@ export class RFQ {
 
   @OneToMany(() => Bid, (bid) => bid.rfq)
   bids: Bid[];
-  buyer: User;
 }

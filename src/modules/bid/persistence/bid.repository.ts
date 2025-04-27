@@ -65,7 +65,13 @@ export class BidRepository {
   async getBidById(id: string): Promise<Bid> {
     const bid = await this.bidRepository.findOne({
       where: { id },
-      relations: ['rfq', 'createdBy', 'bidItems'], // Load RFQ and user relations
+      relations: [
+        'rfq',
+        'createdBy',
+        'bidItems',
+        'rfq.createdBy',
+        'transactions',
+      ], // Load RFQ and user relations
     });
     if (!bid) {
       throw new NotFoundException(`Bid with ID ${id} not found`);
