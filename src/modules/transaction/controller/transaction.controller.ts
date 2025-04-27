@@ -7,6 +7,7 @@ import {
   UseGuards,
   UseInterceptors,
   Param,
+  Get,
 } from '@nestjs/common';
 import { SerializeResponse } from 'src/modules/common/serialize-response.decorator';
 import { Transaction } from '../persistence/transaction.entity';
@@ -29,5 +30,33 @@ export class TransactionController {
       createTransactionDto,
       buyerId,
     );
+  }
+  // Get all transactions for a Buyer
+  @Get('buyer/:buyerId')
+  @UseGuards(JwtAuthGuard)
+  // @SerializeResponse(Transaction)
+  async getAllTransactionsByBuyerId(
+    @Param('buyerId') buyerId: string,
+  ): Promise<Transaction[]> {
+    return await this.transactionService.getAllTransactionsByBuyerId(buyerId);
+  }
+
+  // Get all transactions for a Seller
+  @Get('seller/:sellerId')
+  @UseGuards(JwtAuthGuard)
+  // @SerializeResponse(Transaction)
+  async getAllTransactionsBySellerId(
+    @Param('sellerId') sellerId: string,
+  ): Promise<Transaction[]> {
+    return await this.transactionService.getAllTransactionsBySellerId(sellerId);
+  }
+
+  // ✅ Get transaction by database ID
+  @Get(':id')
+  @UseGuards(JwtAuthGuard)
+  async getTransactionByDbId(@Param('id') id: string): Promise<Transaction> {
+    const transaction = await this.transactionService.getTrasactionByDbId(id);
+
+    return transaction;
   }
 }

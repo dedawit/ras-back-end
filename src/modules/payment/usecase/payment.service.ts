@@ -11,6 +11,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { TransactionService } from 'src/modules/transaction/usecase/transaction.service';
 import { PaymentRepository } from '../persistence/payment.repository';
 import { Logger } from '@nestjs/common';
+import { BidService } from 'src/modules/bid/usecase/bid.service';
 
 @Injectable()
 export class PaymentService {
@@ -20,6 +21,7 @@ export class PaymentService {
     @Inject(forwardRef(() => TransactionService))
     private readonly transactionService: TransactionService,
     private paymentRepository: PaymentRepository,
+    private readonly bidService: BidService,
   ) {}
 
   async initializeChapaPayment(
@@ -28,11 +30,13 @@ export class PaymentService {
     email: string,
     firstName: string,
     lastName: string,
-    phoneNumber?: string, // Optional, as it’s not always required
+    bidId: string,
+    phoneNumber: string,
   ) {
     const chapaUrl = 'https://api.chapa.co/v1/transaction/initialize';
     const apiKey = process.env.CHAPA_API_KEY;
-    const txRef = transactionId || uuidv4();
+    const txRef = transactionId + '.' + bidId;
+    const stringPrice = price.toString(); // Convert price to string
 
     if (!apiKey) {
       throw new HttpException(
@@ -41,7 +45,16 @@ export class PaymentService {
       );
     }
     if (price <= 0) {
-      throw new HttpException('Invalid payment amount', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'Payment can not be zero or less',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    if (price >= 100000) {
+      throw new HttpException(
+        'Payment can not be morethan 100,000 for testing',
+        HttpStatus.BAD_REQUEST,
+      );
     }
     if (!email || !firstName || !lastName) {
       throw new HttpException(
@@ -49,28 +62,29 @@ export class PaymentService {
         HttpStatus.BAD_REQUEST,
       );
     }
+    console.log(price, 'price');
 
     try {
       // Initialize Chapa payment
       const response = await axios.post(
         chapaUrl,
         {
-          // amount: price.toString(), // Chapa expects string per example
-          amount: '10000',
+          amount: price, // Chapa expects string per example
+          // amount: '10000',
           currency: 'ETB',
           email,
           first_name: firstName,
           last_name: lastName,
-          phone_number: phoneNumber || '0970713033', // Include if provided
+          phone_number: phoneNumber, // Include if provided
           tx_ref: txRef,
           callback_url:
             process.env.CHAPA_CALLBACK_URL ||
             'https://yourdomain.com/api/payment/verify',
-          return_url:
-            process.env.CHAPA_RETURN_URL || 'https://yourdomain.com/bids',
+          return_url: `${process.env.CHAPA_RETURN_URL}?tx_ref=${txRef}`,
+
           customization: {
             title: 'Payment ',
-            description: `Payment for Transaction ${transactionId}`,
+            description: ` ${stringPrice} ETB .Txn ${transactionId}.`,
           },
           meta: {
             hide_receipt: 'false',
@@ -146,5 +160,29 @@ export class PaymentService {
         HttpStatus.BAD_REQUEST,
       );
     }
+  }
+  async getPaymentDetailsByTransactionId(transactionId: string) {
+    const [cleanId, bidId] = transactionId.split('.');
+    const bid = await this.bidService.getBid(bidId);
+    const userId = bid.rfq.createdBy.id;
+    const transaction = await this.transactionService.getTransactionByIdAndUser(
+      cleanId,
+      userId,
+    );
+
+    if (!transaction) {
+      throw new Error('Transaction not found');
+    }
+
+    const amount = transaction.bid.totalPrice;
+    const date = transaction.date;
+    const projectName = transaction.bid.rfq.projectName;
+
+    return {
+      transactionId: cleanId,
+      amount,
+      date,
+      projectName,
+    };
   }
 }

@@ -18,6 +18,6 @@ import { BidItemRepository } from './persistence/bid-item.repository';
   ],
   providers: [BidService, BidItemService, BidRepository, BidItemRepository],
   controllers: [BidController],
-  exports: [BidService, BidRepository],
+  exports: [BidService, BidRepository, BidItemService, BidItemRepository],
 })
 export class BidModule {}

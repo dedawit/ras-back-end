@@ -12,10 +12,12 @@ export class PaymentController {
     @Query('status') status: string,
     @Query('ref_id') refId: string,
   ) {
-    // Log the incoming callback info (optional)
     console.log('Chapa Callback:', { trxRef, refId, status });
-
-    // Always verify the status with Chapa directly
     return this.paymentService.verifyChapaPayment(trxRef);
+  }
+
+  @Get('status')
+  async getPaymentStatus(@Query('tx_ref') txRef: string) {
+    return this.paymentService.getPaymentDetailsByTransactionId(txRef);
   }
 }

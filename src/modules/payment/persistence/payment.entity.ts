@@ -6,6 +6,7 @@ import {
   OneToOne,
   JoinColumn,
   ManyToOne,
+  OneToMany,
 } from 'typeorm';
 
 @Entity('payment')
@@ -19,6 +20,6 @@ export class Payment {
   @Column({ nullable: true })
   paymentGateway: string;
 
-  @OneToOne(() => Transaction, (transaction) => transaction.payment)
-  transaction: Transaction;
+  @OneToMany(() => Transaction, (transaction) => transaction.payment)
+  transactions: Transaction[];
 }

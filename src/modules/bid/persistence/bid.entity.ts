@@ -50,6 +50,6 @@ export class Bid {
   })
   state: BidState;
 
-  @OneToOne(() => Transaction, (transaction) => transaction.bid)
-  transaction: Transaction;
+  @OneToMany(() => Transaction, (transaction) => transaction.bid)
+  transactions: Transaction[];
 }

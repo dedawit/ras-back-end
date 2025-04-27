@@ -14,6 +14,7 @@ import { BidModule } from './modules/bid/bid.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { PaymentModule } from './modules/payment/payment.module';
 import { TransactionModule } from './modules/transaction/transaction.module';
+import { FeedbackModule } from './modules/feedback/feedback.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { TransactionModule } from './modules/transaction/transaction.module';
     BidModule,
     TransactionModule,
     PaymentModule,
+    FeedbackModule,
   ],
   controllers: [AppController],
   providers: [AppService],
