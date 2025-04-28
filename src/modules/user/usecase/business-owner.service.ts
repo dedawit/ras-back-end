@@ -55,4 +55,14 @@ export class BusinessOwnerService extends UserService {
 
     return user;
   }
+
+  public async switchRole(userId: string): Promise<User> {
+    const user = await this.userService['userRepository'].findById(userId);
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    return await this.userService['userRepository'].switchRole(user);
+  }
 }
