@@ -48,6 +48,7 @@ export class AuthService {
   }
 
   async refreshToken(refreshToken: string) {
+    console.log('refreshed');
     const decoded = this.jwtService.verify(refreshToken, {
       secret: process.env.REFRESH_JWT_SECRET,
     });

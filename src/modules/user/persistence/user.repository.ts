@@ -57,4 +57,13 @@ export class UserRepository {
     Object.assign(user, { tokenVersion: user.tokenVersion + 1 });
     return this.userRepository.save(user);
   }
+
+  //switch role
+  async switchRole(user: User): Promise<User> {
+    const newRole = user.lastRole === Role.BUYER ? Role.SELLER : Role.BUYER;
+
+    Object.assign(user, { lastRole: newRole });
+
+    return this.userRepository.save(user);
+  }
 }
