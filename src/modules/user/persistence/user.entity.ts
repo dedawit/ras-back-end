@@ -8,6 +8,7 @@ import {
 import { Role } from '../utility/enums/role.enum';
 import { RFQ } from 'src/modules/rfq/persistence/rfq.entity'; // Adjust path if needed
 import { Bid } from 'src/modules/bid/persistence/bid.entity';
+import { Product } from 'src/modules/product/persistence/product.entity';
 
 @Entity('user')
 export class User {
@@ -55,4 +56,7 @@ export class User {
 
   @OneToMany(() => Bid, (bid) => bid.createdBy)
   bids: Bid[];
+
+  @OneToMany(() => Product, (product) => product.createdBy)
+  products: Product[];
 }

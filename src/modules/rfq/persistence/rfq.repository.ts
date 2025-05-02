@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { LessThan, Not, Repository } from 'typeorm';
+import { LessThan, Like, Not, Raw, Repository } from 'typeorm';
 import { RFQ } from './rfq.entity';
 import { CreateRFQDTO } from '../usecase/dto/create-rfq-dto';
 import { UpdateRFQDTO } from '../usecase/dto/update-rfq-dto';
@@ -19,23 +19,22 @@ export class RFQRepository {
     if (!rfq) {
       throw new NotFoundException(`RFQ with ID ${id} not found`);
     }
-  
+
     const stateMap: Record<string, RFQState> = {
       opened: RFQState.OPENED,
       closed: RFQState.CLOSED,
       awarded: RFQState.AWARDED,
     };
-  
+
     const newState = stateMap[state.toLowerCase()];
     if (!newState) {
       return null;
     }
-  
+
     rfq.state = newState;
     await this.rfqRepository.save(rfq);
     return rfq;
   }
-  
 
   async findExpiredRFQs(now: Date): Promise<RFQ[]> {
     const expiredRFQs = await this.rfqRepository.find({
@@ -43,7 +42,7 @@ export class RFQRepository {
         deadline: LessThan(now),
         state: RFQState.OPENED,
       },
-      relations: ['bids'], 
+      relations: ['bids'],
     });
     return expiredRFQs;
   }
@@ -143,5 +142,28 @@ export class RFQRepository {
     const rfq = await this.getRFQById(id);
     rfq.deletedAt = new Date();
     return this.rfqRepository.save(rfq);
-  }  
+  }
+
+  /**
+   * Generates the next purchase number in RFQ-000 format for a specific user
+   */
+  async generateNextPurchaseNumber(userId: string): Promise<string> {
+    const latestRFQ = await this.rfqRepository.findOne({
+      where: {
+        purchaseNumber: Raw((alias) => `${alias} ~ '^RFQ-[0-9]+$'`),
+        createdBy: { id: userId },
+      },
+      order: { purchaseNumber: 'DESC' },
+    });
+
+    let nextNumber = 1;
+    if (latestRFQ && latestRFQ.purchaseNumber) {
+      const match = latestRFQ.purchaseNumber.match(/^RFQ-(\d+)$/);
+      if (match) {
+        nextNumber = parseInt(match[1], 10) + 1;
+      }
+    }
+
+    return `RFQ-${nextNumber.toString().padStart(3, '0')}`;
+  }
 }

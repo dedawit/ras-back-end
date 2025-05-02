@@ -14,14 +14,17 @@ import { Transaction } from '../persistence/transaction.entity';
 import { TransactionService } from '../usecase/transaction.service';
 import { CreateTransactionDto } from '../usecase/dto/create-transaction.dto';
 import { JwtAuthGuard } from 'src/modules/auth/guard/auth.guard';
+import { RoleGuard } from 'src/modules/common/guards/role.guard';
+import { Roles } from 'src/modules/common/roles.decorator';
 
 @Controller('transaction')
 export class TransactionController {
   constructor(private readonly transactionService: TransactionService) {}
 
   //   @SerializeResponse(Transaction)
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles('buyer')
   @Post(':buyerId/create')
-  @UseGuards(JwtAuthGuard)
   async createTransaction(
     @Body() createTransactionDto: CreateTransactionDto,
     @Param('buyerId') buyerId: string,
@@ -32,8 +35,9 @@ export class TransactionController {
     );
   }
   // Get all transactions for a Buyer
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles('buyer')
   @Get('buyer/:buyerId')
-  @UseGuards(JwtAuthGuard)
   // @SerializeResponse(Transaction)
   async getAllTransactionsByBuyerId(
     @Param('buyerId') buyerId: string,
@@ -42,6 +46,8 @@ export class TransactionController {
   }
 
   // Get all transactions for a Seller
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles('seller')
   @Get('seller/:sellerId')
   @UseGuards(JwtAuthGuard)
   // @SerializeResponse(Transaction)
@@ -58,5 +64,17 @@ export class TransactionController {
     const transaction = await this.transactionService.getTrasactionByDbId(id);
 
     return transaction;
+  }
+
+  // ✅ Generate a new transaction ID for a specific buyer
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles('buyer')
+  @Get(':buyerId/generate-id')
+  async generateTransactionId(
+    @Param('buyerId') buyerId: string,
+  ): Promise<{ transactionId: string }> {
+    const transactionId =
+      await this.transactionService.generateTransactionId(buyerId);
+    return { transactionId };
   }
 }

@@ -15,6 +15,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { PaymentModule } from './modules/payment/payment.module';
 import { TransactionModule } from './modules/transaction/transaction.module';
 import { FeedbackModule } from './modules/feedback/feedback.module';
+import { ProductModule } from './modules/product/product.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { FeedbackModule } from './modules/feedback/feedback.module';
     TransactionModule,
     PaymentModule,
     FeedbackModule,
+    ProductModule,
   ],
   controllers: [AppController],
   providers: [AppService],

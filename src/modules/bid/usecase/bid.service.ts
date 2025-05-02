@@ -329,6 +329,9 @@ export class BidService {
     files?: Express.Multer.File, // Optional new file upload
   ): Promise<Bid> {
     const existingBid = await this.bidRepository.getBidById(id);
+    if (existingBid.state !== BidState.OPENED) {
+      throw new BadRequestException('Bid is not open for editing');
+    }
 
     let newBidFilesPath: string | undefined;
 

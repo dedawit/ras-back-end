@@ -49,7 +49,6 @@ export class AuthService {
   }
 
   async refreshToken(refreshToken: string) {
-    console.log('refreshed');
     const decoded = this.jwtService.verify(refreshToken, {
       secret: process.env.REFRESH_JWT_SECRET,
     });
@@ -70,6 +69,8 @@ export class AuthService {
       lastRole: user.lastRole,
       tokenVersion: user.tokenVersion,
     };
+    console.log('refreshed', payload.lastRole);
+
     const newAccessToken = this.jwtService.sign(payload);
 
     return { accessToken: newAccessToken };

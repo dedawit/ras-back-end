@@ -5,12 +5,16 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { UserService } from 'src/modules/user/usecase/user.service';
 
 @Injectable()
 export class RoleGuard implements CanActivate {
-  constructor(private readonly reflector: Reflector) {}
+  constructor(
+    private readonly reflector: Reflector,
+    private readonly userService: UserService,
+  ) {}
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const requiredRoles = this.reflector.get<string[]>(
       'roles',
       context.getHandler(),
@@ -19,10 +23,25 @@ export class RoleGuard implements CanActivate {
 
     const request = context.switchToHttp().getRequest();
     const user = request.user;
+    console.log('JWT payload in RoleGuard:', user);
 
-    if (!user || !requiredRoles.includes(user.lastRole)) {
+    if (!user || !user.sub) {
+      throw new ForbiddenException('No user ID found in JWT payload.');
+    }
+
+    // Fetch user from database to get the latest lastRole
+    const dbUser = await this.userService.findById(user.sub);
+    console.log('User from database:', {
+      id: dbUser.id,
+      lastRole: dbUser.lastRole,
+    });
+
+    if (!dbUser || !requiredRoles.includes(dbUser.lastRole)) {
       throw new ForbiddenException('Access denied because of role.');
     }
+
+    // Update request.user with the latest lastRole for downstream use
+    request.user.lastRole = dbUser.lastRole;
 
     return true;
   }

@@ -35,6 +35,21 @@ import { Multer } from 'multer';
 export class RFQController {
   constructor(private readonly rfqService: RFQService) {}
 
+  /**
+   * Generate a new purchase number for a specific buyer
+   */
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles('buyer')
+  @Get(':buyerId/generate-purchase-number')
+  async generatePurchaseNumber(
+    @Param('buyerId') buyerId: string,
+  ): Promise<{ purchaseNumber: string }> {
+    console.log(buyerId);
+    const purchaseNumber =
+      await this.rfqService.generatePurchaseNumber(buyerId);
+    return { purchaseNumber };
+  }
+
   @SerializeResponse(RFQResponse)
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Roles('buyer')
@@ -60,6 +75,8 @@ export class RFQController {
 
   //get all rfqs
   @Get(':buyerId/view-all-rfqs')
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles('buyer')
   @SerializeResponse(RFQResponse)
   @UseGuards(JwtAuthGuard)
   async findAllRFQs(@Param('buyerId') buyerId: string): Promise<RFQ[]> {
@@ -68,6 +85,7 @@ export class RFQController {
 
   //get all rfqs for sellers
   @Get(':sellerId/seller/view-all-rfqs')
+  @UseGuards(JwtAuthGuard, RoleGuard)
   @Roles('seller')
   @SerializeResponse(RFQResponse)
   @UseGuards(JwtAuthGuard)
@@ -76,6 +94,7 @@ export class RFQController {
   }
 
   @SerializeResponse(RFQResponse)
+  @UseGuards(JwtAuthGuard)
   @Get(':id/view-rfq')
   async viewRFQ(@Param('id') id: string): Promise<RFQ> {
     return this.rfqService.viewRFQ(id);
@@ -111,12 +130,15 @@ export class RFQController {
   }
 
   @SerializeResponse(RFQResponse)
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles('buyer')
   @Delete(':rfqId/delete-rfq')
   async closeRFQ(@Param('rfqId') rfqId: string): Promise<RFQ> {
     return this.rfqService.deleteRFQ(rfqId);
   }
 
   //download RFQ
+  @UseGuards(JwtAuthGuard)
   @Get(':rfqId/:filename')
   async downloadFile(
     @Param('rfqId') rfqId: string,
