@@ -44,11 +44,11 @@ export class RFQService {
     private readonly bidRepository: BidRepository,
   ) {}
 
-  @Cron(CronExpression.EVERY_MINUTE) 
+  @Cron(CronExpression.EVERY_MINUTE)
   async closeExpiredRFQs() {
     const now = new Date();
 
-    const expiredRFQs = await this.rfqRepository.findExpiredRFQs(now)
+    const expiredRFQs = await this.rfqRepository.findExpiredRFQs(now);
 
     if (expiredRFQs.length > 0) {
       for (const rfq of expiredRFQs) {
@@ -56,14 +56,12 @@ export class RFQService {
 
         if (rfq.bids && rfq.bids.length > 0) {
           for (const bid of rfq.bids) {
-            await this.bidRepository.updateBidStatus(bid.id,BidState.CLOSED);
+            await this.bidRepository.updateBidStatus(bid.id, BidState.CLOSED);
           }
         }
       }
-      
-      }
+    }
   }
-
 
   private async generateUniqueRFQId(): Promise<string> {
     let rfqId: string;
@@ -94,8 +92,10 @@ export class RFQService {
       throw new NotFoundException('User not found');
     }
     const { purchaseNumber } = rfqDto;
-    const checkDuplicate =
-      await this.rfqRepository.getRFQByPurchaseNumber(purchaseNumber);
+    const checkDuplicate = await this.rfqRepository.getRFQByPurchaseNumber(
+      purchaseNumber,
+      buyerId,
+    );
     if (checkDuplicate) {
       throw new ConflictException('Purchase number already exists');
     }
@@ -199,6 +199,9 @@ export class RFQService {
     guidelineDocFile?: Express.Multer.File, // Optional new file upload
   ): Promise<RFQ> {
     const existingRFQ = await this.viewRFQ(id);
+    if (existingRFQ.state !== RFQState.OPENED) {
+      throw new BadRequestException('RFQ can not be edited now');
+    }
 
     let newAuctionDocPath: string | undefined;
     let newGuidelineDocPath: string | undefined;
@@ -376,6 +379,13 @@ export class RFQService {
     } catch (error) {
       console.error('Error deleting file:', error);
     }
+  }
+
+  /**
+   * Generates the next purchase number for a specific user
+   */
+  async generatePurchaseNumber(userId: string): Promise<string> {
+    return this.rfqRepository.generateNextPurchaseNumber(userId);
   }
 
   /**

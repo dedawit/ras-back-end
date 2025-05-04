@@ -8,6 +8,7 @@ import { User } from 'src/modules/user/persistence/user.entity';
 import { UserService } from 'src/modules/user/usecase/user.service';
 import { HashPassword } from 'src/modules/user/utility/generate.hash';
 import { JwtPayload } from '../interface/jwt-payload.interface';
+import { LogoutResponseDto } from './dto/logout-response.dto';
 
 @Injectable()
 export class AuthService {
@@ -48,7 +49,6 @@ export class AuthService {
   }
 
   async refreshToken(refreshToken: string) {
-    console.log('refreshed');
     const decoded = this.jwtService.verify(refreshToken, {
       secret: process.env.REFRESH_JWT_SECRET,
     });
@@ -69,6 +69,8 @@ export class AuthService {
       lastRole: user.lastRole,
       tokenVersion: user.tokenVersion,
     };
+    console.log('refreshed', payload.lastRole);
+
     const newAccessToken = this.jwtService.sign(payload);
 
     return { accessToken: newAccessToken };
@@ -81,5 +83,24 @@ export class AuthService {
       throw new Error('User not found');
     }
     return this.userService.incrementTokenVersion(userId);
+  }
+
+  //logout
+  async logout(userId: string): Promise<LogoutResponseDto> {
+    try {
+      const user = await this.userService.findById(userId);
+      if (!user) {
+        throw new BadRequestException('User not found');
+      }
+
+      await this.userService.incrementTokenVersion(userId);
+
+      return {
+        success: true,
+        message: 'Successfully logged out',
+      };
+    } catch (error) {
+      throw new BadRequestException('Logout failed');
+    }
   }
 }

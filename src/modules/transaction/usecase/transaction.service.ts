@@ -138,6 +138,12 @@ export class TransactionService {
     return transactions;
   }
 
+  async generateTransactionId(buyerId: string): Promise<string> {
+    return this.transactionRepository.generateNextTransactionIdForBuyer(
+      buyerId,
+    );
+  }
+
   /**
    * Syncs service attributes with transaction entity
    */

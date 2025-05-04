@@ -37,6 +37,8 @@ export class BidController {
   /**
    * Create a new Bid with a mandatory zip file
    */
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles('seller')
   @Post('seller/:sellerId/create-bid')
   @UseInterceptors(FileInterceptor('bidFiles')) // Name must match the frontend
   async createBid(
@@ -55,6 +57,8 @@ export class BidController {
    * Get all Bids for an RFQ
    */
   // @SerializeResponse(BidResponse)
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles('buyer')
   @UseGuards(JwtAuthGuard)
   @Get('rfq/:rfqId/view-all-bids')
   async findBidsByRFQ(@Param('rfqId') rfqId: string): Promise<Bid[]> {
@@ -136,5 +140,4 @@ export class BidController {
   async rejectBid(@Param('bidId') bidId: string) {
     return this.bidService.rejectBid(bidId);
   }
-
 }

@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Raw, Repository } from 'typeorm';
 import { Transaction } from './transaction.entity';
 import { Payment } from 'src/modules/payment/persistence/payment.entity';
 
@@ -99,5 +99,30 @@ export class TransactionRepository {
       },
       relations: ['bid.createdBy', 'bid.rfq.createdBy', 'payment'],
     });
+  }
+
+  async generateNextTransactionIdForBuyer(buyerId: string): Promise<string> {
+    const latestTransaction = await this.transactionRepository.findOne({
+      where: {
+        transactionId: Raw((alias) => `${alias} ~ '^TR-[0-9]+$'`),
+        bid: {
+          rfq: {
+            createdBy: { id: buyerId },
+          },
+        },
+      },
+      order: { transactionId: 'DESC' },
+      relations: ['bid', 'bid.rfq', 'bid.rfq.createdBy'],
+    });
+
+    let nextNumber = 1;
+    if (latestTransaction && latestTransaction.transactionId) {
+      const match = latestTransaction.transactionId.match(/^TR-(\d+)$/);
+      if (match) {
+        nextNumber = parseInt(match[1], 10) + 1;
+      }
+    }
+
+    return `TR-${nextNumber.toString().padStart(3, '0')}`;
   }
 }
