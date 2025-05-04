@@ -92,8 +92,10 @@ export class RFQService {
       throw new NotFoundException('User not found');
     }
     const { purchaseNumber } = rfqDto;
-    const checkDuplicate =
-      await this.rfqRepository.getRFQByPurchaseNumber(purchaseNumber);
+    const checkDuplicate = await this.rfqRepository.getRFQByPurchaseNumber(
+      purchaseNumber,
+      buyerId,
+    );
     if (checkDuplicate) {
       throw new ConflictException('Purchase number already exists');
     }

@@ -2,8 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Product } from './product.entity';
-
-import { User } from 'src/modules/user/persistence/user.entity'; // Adjust path if needed
+import { User } from 'src/modules/user/persistence/user.entity';
 import { CreateProductDTO, UpdateProductDTO } from '../usecase/dto/product.dto';
 
 @Injectable()
@@ -19,11 +18,13 @@ export class ProductRepository {
   async createProduct(
     productDto: CreateProductDTO,
     createdBy: User,
-    productId?: string,
+    productId: string,
+    image: string,
   ): Promise<Product> {
     const product = this.productRepository.create({
       id: productId,
       ...productDto,
+      image,
       createdBy,
       createdAt: new Date(),
     });
@@ -51,9 +52,10 @@ export class ProductRepository {
   async updateProduct(
     id: string,
     productDto: UpdateProductDTO,
+    image: string,
   ): Promise<Product> {
     const existingProduct = await this.getProductById(id);
-    this.productRepository.merge(existingProduct, productDto);
+    this.productRepository.merge(existingProduct, { ...productDto, image });
     return this.productRepository.save(existingProduct);
   }
 

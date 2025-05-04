@@ -87,9 +87,12 @@ export class RFQRepository {
   /**
    * Retrieves an RFQ by purchaseNumber
    */
-  async getRFQByPurchaseNumber(purchaseNumber: string) {
+  async getRFQByPurchaseNumber(
+    purchaseNumber: string,
+    buyerId: string,
+  ): Promise<RFQ> {
     const rfq = await this.rfqRepository.findOne({
-      where: { purchaseNumber },
+      where: { purchaseNumber, createdBy: { id: buyerId } },
       relations: ['createdBy'], // Load buyer relation if needed
     });
     return rfq;

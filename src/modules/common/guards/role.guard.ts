@@ -23,7 +23,6 @@ export class RoleGuard implements CanActivate {
 
     const request = context.switchToHttp().getRequest();
     const user = request.user;
-    console.log('JWT payload in RoleGuard:', user);
 
     if (!user || !user.sub) {
       throw new ForbiddenException('No user ID found in JWT payload.');
@@ -31,10 +30,6 @@ export class RoleGuard implements CanActivate {
 
     // Fetch user from database to get the latest lastRole
     const dbUser = await this.userService.findById(user.sub);
-    console.log('User from database:', {
-      id: dbUser.id,
-      lastRole: dbUser.lastRole,
-    });
 
     if (!dbUser || !requiredRoles.includes(dbUser.lastRole)) {
       throw new ForbiddenException('Access denied because of role.');

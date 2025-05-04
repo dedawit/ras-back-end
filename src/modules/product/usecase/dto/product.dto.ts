@@ -10,9 +10,9 @@ export class CreateProductDTO {
   @IsNotEmpty({ message: 'Category is required.' })
   category: string;
 
-  @IsUrl({}, { message: 'Image must be a valid URL.' })
-  @IsNotEmpty({ message: 'Image URL is required.' })
-  image: string;
+  // @IsUrl({}, { message: 'Image must be a valid URL.' })
+  // @IsNotEmpty({ message: 'Image URL is required.' })
+  // image: string;
 
   @IsString({ message: 'Detail must be a string.' })
   @IsOptional()
