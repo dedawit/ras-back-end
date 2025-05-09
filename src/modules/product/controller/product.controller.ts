@@ -112,7 +112,7 @@ export class ProductController {
     return products.map((product) => ({
       ...product,
       imageUri: product.image
-        ? `/product/${product.id}/${product.image}`
+        ? `${process.env.UNIQUE_URL}/secured-storage/product/${product.id}/${product.image}`
         : undefined,
     }));
   }
