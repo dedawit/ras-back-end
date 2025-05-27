@@ -57,6 +57,17 @@ export class TransactionController {
     return await this.transactionService.getAllTransactionsBySellerId(sellerId);
   }
 
+
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles('seller')
+  @Get('seller/:sellerId')
+  async getSellerTransactions(
+    @Param('sellerId') sellerId: string,
+  ): Promise<any[]> {
+    return this.transactionService.getTransactionsBySeller(sellerId);
+  }
+
+
   // ✅ Get transaction by database ID
   @Get(':id')
   @UseGuards(JwtAuthGuard)

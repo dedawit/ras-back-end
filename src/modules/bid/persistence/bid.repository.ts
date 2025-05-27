@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { Bid } from './bid.entity'; // Adjust path if needed
 
 import { User } from 'src/modules/user/persistence/user.entity'; // Adjust path
@@ -9,6 +9,7 @@ import { BidState } from '../usecase/utility/bid-state.enum';
 
 import { BidItem } from './bit-item.entity';
 import { BidItemService } from '../usecase/bid-item.service';
+
 
 @Injectable()
 export class BidRepository {
@@ -131,6 +132,31 @@ export class BidRepository {
       where: { createdBy: { id: createdById } },
       relations: ['rfq', 'createdBy', 'bidItems'],
     });
+  }
+
+  async countBidsByStateForUser(userId: string) {
+    const bids = await this.bidRepository.find({
+      where: {
+        createdBy: { id: userId },
+        state: In([BidState.REJECTED, BidState.AWARDED]),
+      },
+      select: ['state'],
+    });
+
+    const result = {
+      [BidState.REJECTED]: 0,
+      [BidState.AWARDED]: 0,
+    };
+
+    bids.forEach((bid) => {
+      if (bid.state === BidState.REJECTED) result[BidState.REJECTED]++;
+      if (bid.state === BidState.AWARDED) result[BidState.AWARDED]++;
+    });
+
+    return [
+      { state: BidState.REJECTED, count: result[BidState.REJECTED] },
+      { state: BidState.AWARDED, count: result[BidState.AWARDED] },
+    ];
   }
 
   /**

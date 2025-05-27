@@ -125,4 +125,26 @@ export class TransactionRepository {
 
     return `TR-${nextNumber.toString().padStart(3, '0')}`;
   }
+
+async generateTransactionHistoryOfSeller(sellerId: string): Promise<Transaction[]> {
+  return this.transactionRepository.find({
+    where: {
+      bid: {
+        createdBy: {
+          id: sellerId,
+        },
+      },
+    },
+    relations: [
+      'bid',
+      'bid.createdBy',
+      'bid.rfq',
+      'bid.rfq.createdBy',
+      'payment',
+    ],
+    order: {
+      date: 'DESC',
+    },
+  });
+}
 }
