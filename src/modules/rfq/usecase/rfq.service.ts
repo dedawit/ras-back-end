@@ -76,6 +76,8 @@ export class RFQService {
       }
     }
   }
+
+
   /**
    * Creates a new RFQ with mandatory auctionDoc and guidelineDoc files
    */
@@ -185,6 +187,63 @@ export class RFQService {
     this.syncWithRFQ(rfq);
     return rfq;
   }
+
+  async getRfqHistoryByBuyer(buyerId: string):Promise<any[]> {
+        const user = await this.userRepository.findById(buyerId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const historyBuyerRfqs = await this.rfqRepository.getRfqHistoryByBuyer(buyerId);
+  
+    if (!historyBuyerRfqs || historyBuyerRfqs.length === 0) {
+      throw new NotFoundException('No historyBuyerRfqs found for this buyer');
+    }
+
+    return historyBuyerRfqs.map((rfq) => {
+      const awardedBid = rfq.bids.find((b) => b.state === BidState.AWARDED);
+      const transaction = awardedBid?.transactions?.[0];
+      const payment = transaction?.payment;
+
+      return {
+        rfqId: rfq.id,
+        title: rfq.title,
+        purchaseNumber: rfq.purchaseNumber,
+        projectName: rfq.projectName,
+        quantity: rfq.quantity,
+        category: rfq.category,
+        deadline: rfq.deadline,
+        createdAt: rfq.createdAt,
+        winningBidPrice: awardedBid?.totalPrice || 0,
+        transactionId: transaction?.transactionId || null,
+        transactionDate: transaction?.date || null,
+        paymentAmount: payment?.price || 0,
+        paymentGateway: payment?.paymentGateway || null,
+      };
+    });
+  }
+
+
+async getBuyerRfqSummary(buyerId: string): Promise<{ name: string; value: number }[]> {
+  const user = await this.userRepository.findById(buyerId);
+  if (!user) {
+    throw new NotFoundException('Buyer not found');
+  }
+
+  const rfqs = await this.rfqRepository.getRfqHistoryByBuyer(buyerId);
+  if (!rfqs || rfqs.length === 0) {
+    return [];
+  }
+
+  const summaryMap: Record<string, number> = {};
+
+  for (const rfq of rfqs) {
+    const status = rfq.state || 'UNKNOWN'; 
+    summaryMap[status] = (summaryMap[status] || 0) + 1;
+  }
+
+  return Object.entries(summaryMap).map(([name, value]) => ({ name, value }));
+}
 
   /**
    * Updates an existing RFQ with optional file replacement

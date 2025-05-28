@@ -84,6 +84,20 @@ export class RFQRepository {
     return rfq;
   }
 
+async getRfqHistoryByBuyer(buyerId: string): Promise<RFQ[]> {
+  return this.rfqRepository.find({
+    where: { createdBy: { id: buyerId } },
+    relations: [
+      'bids',
+      'bids.transactions',
+      'bids.transactions.payment',
+      'bids.createdBy',
+    ],
+    order: {
+      createdAt: 'DESC',
+    },
+  });
+}
   /**
    * Retrieves an RFQ by purchaseNumber
    */
