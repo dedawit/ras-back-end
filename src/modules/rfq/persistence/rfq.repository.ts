@@ -72,11 +72,11 @@ export class RFQRepository {
   /**
    * Retrieves an RFQ by ID
    */
-  async getRFQById(id: string): Promise<RFQ> {
+  async getRFQById(id: string): Promise<RFQ | null> {
     console.log('id', id);
     const rfq = await this.rfqRepository.findOne({
       where: { id },
-      relations: ['createdBy'], // Load buyer relation if needed
+      relations: ['bids', 'createdBy'],  
     });
     if (!rfq) {
       throw new NotFoundException(`RFQ with ID ${id} not found`);

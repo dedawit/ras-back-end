@@ -340,6 +340,16 @@ async getBuyerRfqSummary(buyerId: string): Promise<{ name: string; value: number
    * Opens an RFQ
    */
   async deleteRFQ(id: string): Promise<RFQ> {
+  const rfq = await this.rfqRepository.getRFQById(id);
+
+  if (!rfq) {
+    throw new NotFoundException('RFQ not found');
+  }
+
+  if (rfq.bids && rfq.bids.length > 0) {
+    throw new BadRequestException('Cannot delete RFQ because it has associated bids');
+  }
+
     return this.rfqRepository.deleteRFQ(id);
   }
 
