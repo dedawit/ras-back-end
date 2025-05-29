@@ -35,9 +35,7 @@ import { Multer } from 'multer';
 export class RFQController {
   constructor(private readonly rfqService: RFQService) {}
 
-  /**
-   * Generate a new purchase number for a specific buyer
-   */
+  //purchase number generator
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Roles('buyer')
   @Get(':buyerId/generate-purchase-number')
@@ -50,6 +48,7 @@ export class RFQController {
     return { purchaseNumber };
   }
 
+  // create RFQ
   @SerializeResponse(RFQResponse)
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Roles('buyer')
