@@ -146,4 +146,20 @@ export class RFQController {
   ): Promise<void> {
     return this.rfqService.downloadFile(rfqId, filename, res);
   }
+
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles('buyer')
+  @Get('history/:buyerId')
+  async getRfqHistory(@Param('buyerId') buyerId: string) {
+    return this.rfqService.getRfqHistoryByBuyer(buyerId);
+  }
+
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles('buyer')
+  @Get('dashboard/summary/:buyerId')
+  async getBuyerRfqSummary(@Param('buyerId') buyerId: string) {
+    return this.rfqService.getBuyerRfqSummary(buyerId);
+  }
+
+
 }

@@ -76,6 +76,14 @@ export class BidController {
     return this.bidService.findBidsByUser(sellerId);
   }
 
+  
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles('seller')
+  @Get('state-count/:userId')
+  async getBidStateCount(@Param('userId') userId: string) {
+    return this.bidService.getBidStateCountForUser(userId);
+  }
+
   /**
    * Get a specific Bid by ID
    */

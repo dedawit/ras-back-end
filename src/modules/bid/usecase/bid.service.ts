@@ -233,6 +233,9 @@ export class BidService {
     return bids;
   }
 
+    async getBidStateCountForUser(userId: string) {
+    return this.bidRepository.countBidsByStateForUser(userId);
+  }
   /**
    * Deletes a Bid (soft delete)
    */

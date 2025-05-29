@@ -152,4 +152,24 @@ export class TransactionService {
     this.bid = transaction.bid?.id ?? '';
     this.date = transaction.date;
   }
+
+  async getTransactionsBySeller(sellerId: string) {
+    const transactionsSellerHistory = await this.transactionRepository.generateTransactionHistoryOfSeller(
+      sellerId)
+
+    return transactionsSellerHistory.map((tx) => ({
+      transactionId: tx.transactionId,
+      date: tx.date,
+      price: tx.payment?.price || null,
+      paymentGateway: tx.payment?.paymentGateway || null,
+      rfq: {
+        projectName: tx.bid?.rfq?.projectName,
+        purchaseNumber: tx.bid?.rfq?.purchaseNumber,
+        category: tx.bid?.rfq?.category,
+      },
+      bidTotalPrice: tx.bid?.totalPrice,
+      buyerName: `${tx.bid?.rfq?.createdBy?.firstName} ${tx.bid?.rfq?.createdBy?.lastName}`,
+    }));
+  }
+
 }
