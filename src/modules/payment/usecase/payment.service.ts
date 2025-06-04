@@ -165,6 +165,8 @@ export class PaymentService {
     const [cleanId, bidId] = transactionId.split('.');
     const bid = await this.bidService.getBid(bidId);
     const userId = bid.rfq.createdBy.id;
+    console.log('userId', userId);
+    console.log('cleanId', cleanId);
     const transaction = await this.transactionService.getTransactionByIdAndUser(
       cleanId,
       userId,

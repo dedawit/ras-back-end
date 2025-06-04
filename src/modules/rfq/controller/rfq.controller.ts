@@ -149,7 +149,7 @@ export class RFQController {
 
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Roles('buyer')
-  @Get('history/:buyerId')
+  @Get('detail/:buyerId/history')
   async getRfqHistory(@Param('buyerId') buyerId: string) {
     return this.rfqService.getRfqHistoryByBuyer(buyerId);
   }
@@ -160,6 +160,4 @@ export class RFQController {
   async getBuyerRfqSummary(@Param('buyerId') buyerId: string) {
     return this.rfqService.getBuyerRfqSummary(buyerId);
   }
-
-
 }
