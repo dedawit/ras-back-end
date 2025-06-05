@@ -24,7 +24,7 @@ export class FeedbackController {
   async createFeedback(
     @Body() createFeedbackDto: CreateFeedbackDto,
   ): Promise<Feedback> {
-    return this.feedbackService.createFeedback(createFeedbackDto);
+    return this.feedbackService.rate(createFeedbackDto);
   }
 
   @Get('transaction/:transactionId')

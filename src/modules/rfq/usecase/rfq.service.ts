@@ -70,9 +70,9 @@ export class RFQService {
       rfqId = uuidv4();
       const existingRFQ = await this.rfqRepository
         .getRFQById(rfqId)
-        .catch(() => null); // Null if not found
+        .catch(() => null);
       if (!existingRFQ) {
-        return rfqId; // Unique ID found
+        return rfqId;
       }
     }
   }
@@ -187,7 +187,7 @@ export class RFQService {
     return rfq;
   }
 
-  async getRfqHistoryByBuyer(buyerId: string): Promise<any[]> {
+  async generateReport(buyerId: string): Promise<any[]> {
     const user = await this.userRepository.findById(buyerId);
     if (!user) {
       throw new NotFoundException('User not found');
@@ -338,7 +338,7 @@ export class RFQService {
   }
 
   /**
-   * Opens an RFQ
+   * deletes RFQ
    */
   async deleteRFQ(id: string): Promise<RFQ> {
     const rfq = await this.rfqRepository.getRFQById(id);
@@ -408,7 +408,7 @@ export class RFQService {
 
     // Use absolute path from project root for consistency
     const storagePath = path.join(
-      process.cwd(), // Current working directory (project root)
+      process.cwd(),
       'src/secured-storage/rfq',
       safeRfqId,
     );
@@ -419,14 +419,13 @@ export class RFQService {
       const fileName = `${type}-${uniqueSuffix}${ext}`;
       const filePath = path.join(storagePath, fileName);
 
-      // Check if file exists (optional, rare case due to UUID)
       try {
         await fs.access(filePath);
         throw new InternalServerErrorException(
           `File ${fileName} already exists`,
         );
       } catch (error) {
-        if (error.code !== 'ENOENT') throw error; // Only proceed if file doesn't exist
+        if (error.code !== 'ENOENT') throw error;
       }
 
       await fs.writeFile(filePath, file.buffer);
@@ -476,6 +475,6 @@ export class RFQService {
     this.deadline = rfq.deadline;
     this.state = rfq.state;
     this.createdAt = rfq.createdAt;
-    this.createdBy = rfq.createdBy?.id || ''; // Assuming buyer is an object with id
+    this.createdBy = rfq.createdBy?.id || '';
   }
 }

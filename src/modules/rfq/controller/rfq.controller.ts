@@ -151,7 +151,7 @@ export class RFQController {
   @Roles('buyer')
   @Get('detail/:buyerId/history')
   async getRfqHistory(@Param('buyerId') buyerId: string) {
-    return this.rfqService.getRfqHistoryByBuyer(buyerId);
+    return this.rfqService.generateReport(buyerId);
   }
 
   @UseGuards(JwtAuthGuard, RoleGuard)
