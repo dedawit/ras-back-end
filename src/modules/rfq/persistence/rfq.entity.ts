@@ -8,7 +8,7 @@ import {
   DeleteDateColumn,
   OneToMany,
 } from 'typeorm';
-import { User } from 'src/modules/user/persistence/user.entity'; // Adjust path if needed
+import { User } from 'src/modules/user/persistence/user.entity';
 import { RFQState } from '../utility/enums/rfq-state.enum';
 import { Bid } from 'src/modules/bid/persistence/bid.entity';
 
@@ -51,7 +51,6 @@ export class RFQ {
   @Column()
   deadline: Date;
 
-  // Many-to-One relationship with the User entity for buyer
   @ManyToOne(() => User, (user) => user.rfqs)
   @JoinColumn({ name: 'buyerId' })
   createdBy: User;

@@ -24,7 +24,7 @@ export class BidItemService {
   private transportFee: number | null;
   private taxes: number | null;
   private totalPrice: number;
-  private bid: string; // Storing bid ID for simplicity
+  private bid: string;
 
   constructor(
     private readonly bidItemRepository: BidItemRepository,
@@ -122,6 +122,6 @@ export class BidItemService {
     this.transportFee = bidItem.transportFee || null;
     this.taxes = bidItem.taxes || null;
     this.totalPrice = bidItem.totalPrice;
-    this.bid = bidItem.bid?.id || ''; // Assuming bid is an object with id
+    this.bid = bidItem.bid?.id || '';
   }
 }

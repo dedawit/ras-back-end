@@ -76,7 +76,7 @@ export class RFQRepository {
     console.log('id', id);
     const rfq = await this.rfqRepository.findOne({
       where: { id },
-      relations: ['bids', 'createdBy'],  
+      relations: ['bids', 'createdBy'],
     });
     if (!rfq) {
       throw new NotFoundException(`RFQ with ID ${id} not found`);
@@ -84,20 +84,21 @@ export class RFQRepository {
     return rfq;
   }
 
-async getRfqHistoryByBuyer(buyerId: string): Promise<RFQ[]> {
-  return this.rfqRepository.find({
-    where: { createdBy: { id: buyerId } },
-    relations: [
-      'bids',
-      'bids.transactions',
-      'bids.transactions.payment',
-      'bids.createdBy',
-    ],
-    order: {
-      createdAt: 'DESC',
-    },
-  });
-}
+  async getRfqHistoryByBuyer(buyerId: string): Promise<RFQ[]> {
+    return this.rfqRepository.find({
+      where: { createdBy: { id: buyerId } },
+      relations: [
+        'bids',
+        'bids.transactions',
+        'bids.transactions.payment',
+        'bids.createdBy',
+      ],
+      order: {
+        createdAt: 'DESC',
+      },
+    });
+  }
+
   /**
    * Retrieves an RFQ by purchaseNumber
    */

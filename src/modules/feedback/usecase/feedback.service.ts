@@ -12,10 +12,11 @@ export class FeedbackService {
     private readonly transactionService: TransactionService,
     private readonly userService: UserService,
   ) {}
+  private id: string;
+  private comment: string;
+  private star: number;
 
-  async createFeedback(
-    createFeedbackDto: CreateFeedbackDto,
-  ): Promise<Feedback> {
+  async rate(createFeedbackDto: CreateFeedbackDto): Promise<Feedback> {
     // Verify transaction exists
     const transaction = await this.transactionService.getTrasactionByDbId(
       createFeedbackDto.transactionId,
@@ -50,5 +51,14 @@ export class FeedbackService {
     }
 
     return this.feedbackRepository.getFeedbacksByTransactionId(transactionId);
+  }
+
+  /**
+   * Syncs private attributes with a Feedback entity
+   */
+  private syncWithFeedback(feedback: Feedback): void {
+    this.id = feedback.id;
+    this.comment = feedback.comment;
+    this.star = feedback.star;
   }
 }

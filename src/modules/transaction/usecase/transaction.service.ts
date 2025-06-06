@@ -16,7 +16,7 @@ import { UserService } from 'src/modules/user/usecase/user.service';
 
 @Injectable()
 export class TransactionService {
-  private id: string;
+  private transactionId: string;
   private bid: string;
   private date: Date;
 
@@ -84,7 +84,7 @@ export class TransactionService {
   }
 
   // a method to get transaction by id
-  async getTransactionById(id: string): Promise<Transaction> {
+  public async getTransactionById(id: string): Promise<Transaction> {
     const transaction = await this.transactionRepository.getTransactionById(id);
     if (!transaction) {
       throw new NotFoundException(`Transaction with ID ${id} not found`);
@@ -148,14 +148,16 @@ export class TransactionService {
    * Syncs service attributes with transaction entity
    */
   private syncWithTransaction(transaction: Transaction): void {
-    this.id = transaction.id;
+    this.transactionId = transaction.transactionId;
     this.bid = transaction.bid?.id ?? '';
     this.date = transaction.date;
   }
 
   async getTransactionsBySeller(sellerId: string) {
-    const transactionsSellerHistory = await this.transactionRepository.generateTransactionHistoryOfSeller(
-      sellerId)
+    const transactionsSellerHistory =
+      await this.transactionRepository.generateTransactionHistoryOfSeller(
+        sellerId,
+      );
 
     return transactionsSellerHistory.map((tx) => ({
       transactionId: tx.transactionId,
@@ -171,5 +173,4 @@ export class TransactionService {
       buyerName: `${tx.bid?.rfq?.createdBy?.firstName} ${tx.bid?.rfq?.createdBy?.lastName}`,
     }));
   }
-
 }

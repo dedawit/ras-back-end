@@ -24,8 +24,8 @@ import { RFQState } from 'src/modules/rfq/utility/enums/rfq-state.enum';
 @Injectable()
 export class BidService {
   private id: string;
-  private rfq: string; // Storing RFQ ID
-  private createdBy: string; // Storing User ID
+  private rfq: string;
+  private createdBy: string;
   private files: string | null;
   private totalPrice: number;
   private createdAt: Date;
@@ -88,7 +88,7 @@ export class BidService {
         .getBidById(bidId)
         .catch(() => null);
       if (!existingBid) {
-        return bidId; // Unique ID found
+        return bidId;
       }
     }
   }
@@ -233,7 +233,7 @@ export class BidService {
     return bids;
   }
 
-    async getBidStateCountForUser(userId: string) {
+  async getBidStateCountForUser(userId: string) {
     return this.bidRepository.countBidsByStateForUser(userId);
   }
   /**
@@ -310,7 +310,7 @@ export class BidService {
           `File ${fileName} already exists`,
         );
       } catch (error) {
-        if (error.code !== 'ENOENT') throw error; // Proceed if file doesn't exist
+        if (error.code !== 'ENOENT') throw error;
       }
 
       await fs.writeFile(filePath, file.buffer);
@@ -328,8 +328,8 @@ export class BidService {
 
   public async editBid(
     id: string,
-    bidDto: UpdateBidDTO & { bidFiles?: string | File }, // Extend DTO to include file field
-    files?: Express.Multer.File, // Optional new file upload
+    bidDto: UpdateBidDTO & { bidFiles?: string | File },
+    files?: Express.Multer.File,
   ): Promise<Bid> {
     const existingBid = await this.bidRepository.getBidById(id);
     if (existingBid.state !== BidState.OPENED) {
@@ -393,8 +393,8 @@ export class BidService {
    */
   private syncWithBid(bid: Bid): void {
     this.id = bid.id;
-    this.rfq = bid.rfq?.id || ''; // Assuming rfq is an object with id
-    this.createdBy = bid.createdBy?.id || ''; // Assuming createdBy is an object with id
+    this.rfq = bid.rfq?.id || '';
+    this.createdBy = bid.createdBy?.id || '';
     this.files = bid.files || null;
     this.totalPrice = bid.totalPrice;
     this.createdAt = bid.createdAt;

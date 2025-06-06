@@ -35,9 +35,7 @@ import { Multer } from 'multer';
 export class RFQController {
   constructor(private readonly rfqService: RFQService) {}
 
-  /**
-   * Generate a new purchase number for a specific buyer
-   */
+  //purchase number generator
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Roles('buyer')
   @Get(':buyerId/generate-purchase-number')
@@ -50,6 +48,7 @@ export class RFQController {
     return { purchaseNumber };
   }
 
+  // create RFQ
   @SerializeResponse(RFQResponse)
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Roles('buyer')
@@ -150,9 +149,9 @@ export class RFQController {
 
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Roles('buyer')
-  @Get('history/:buyerId')
+  @Get('detail/:buyerId/history')
   async getRfqHistory(@Param('buyerId') buyerId: string) {
-    return this.rfqService.getRfqHistoryByBuyer(buyerId);
+    return this.rfqService.generateReport(buyerId);
   }
 
   @UseGuards(JwtAuthGuard, RoleGuard)
@@ -161,6 +160,4 @@ export class RFQController {
   async getBuyerRfqSummary(@Param('buyerId') buyerId: string) {
     return this.rfqService.getBuyerRfqSummary(buyerId);
   }
-
-
 }

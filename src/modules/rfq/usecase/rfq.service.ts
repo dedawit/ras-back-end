@@ -70,13 +70,12 @@ export class RFQService {
       rfqId = uuidv4();
       const existingRFQ = await this.rfqRepository
         .getRFQById(rfqId)
-        .catch(() => null); // Null if not found
+        .catch(() => null);
       if (!existingRFQ) {
-        return rfqId; // Unique ID found
+        return rfqId;
       }
     }
   }
-
 
   /**
    * Creates a new RFQ with mandatory auctionDoc and guidelineDoc files
@@ -188,14 +187,15 @@ export class RFQService {
     return rfq;
   }
 
-  async getRfqHistoryByBuyer(buyerId: string):Promise<any[]> {
-        const user = await this.userRepository.findById(buyerId);
+  async generateReport(buyerId: string): Promise<any[]> {
+    const user = await this.userRepository.findById(buyerId);
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    const historyBuyerRfqs = await this.rfqRepository.getRfqHistoryByBuyer(buyerId);
-  
+    const historyBuyerRfqs =
+      await this.rfqRepository.getRfqHistoryByBuyer(buyerId);
+
     if (!historyBuyerRfqs || historyBuyerRfqs.length === 0) {
       throw new NotFoundException('No historyBuyerRfqs found for this buyer');
     }
@@ -223,27 +223,28 @@ export class RFQService {
     });
   }
 
+  async getBuyerRfqSummary(
+    buyerId: string,
+  ): Promise<{ name: string; value: number }[]> {
+    const user = await this.userRepository.findById(buyerId);
+    if (!user) {
+      throw new NotFoundException('Buyer not found');
+    }
 
-async getBuyerRfqSummary(buyerId: string): Promise<{ name: string; value: number }[]> {
-  const user = await this.userRepository.findById(buyerId);
-  if (!user) {
-    throw new NotFoundException('Buyer not found');
+    const rfqs = await this.rfqRepository.getRfqHistoryByBuyer(buyerId);
+    if (!rfqs || rfqs.length === 0) {
+      return [];
+    }
+
+    const summaryMap: Record<string, number> = {};
+
+    for (const rfq of rfqs) {
+      const status = rfq.state || 'UNKNOWN';
+      summaryMap[status] = (summaryMap[status] || 0) + 1;
+    }
+
+    return Object.entries(summaryMap).map(([name, value]) => ({ name, value }));
   }
-
-  const rfqs = await this.rfqRepository.getRfqHistoryByBuyer(buyerId);
-  if (!rfqs || rfqs.length === 0) {
-    return [];
-  }
-
-  const summaryMap: Record<string, number> = {};
-
-  for (const rfq of rfqs) {
-    const status = rfq.state || 'UNKNOWN'; 
-    summaryMap[status] = (summaryMap[status] || 0) + 1;
-  }
-
-  return Object.entries(summaryMap).map(([name, value]) => ({ name, value }));
-}
 
   /**
    * Updates an existing RFQ with optional file replacement
@@ -337,18 +338,20 @@ async getBuyerRfqSummary(buyerId: string): Promise<{ name: string; value: number
   }
 
   /**
-   * Opens an RFQ
+   * deletes RFQ
    */
   async deleteRFQ(id: string): Promise<RFQ> {
-  const rfq = await this.rfqRepository.getRFQById(id);
+    const rfq = await this.rfqRepository.getRFQById(id);
 
-  if (!rfq) {
-    throw new NotFoundException('RFQ not found');
-  }
+    if (!rfq) {
+      throw new NotFoundException('RFQ not found');
+    }
 
-  if (rfq.bids && rfq.bids.length > 0) {
-    throw new BadRequestException('Cannot delete RFQ because it has associated bids');
-  }
+    if (rfq.bids && rfq.bids.length > 0) {
+      throw new BadRequestException(
+        'Cannot delete RFQ because it has associated bids',
+      );
+    }
 
     return this.rfqRepository.deleteRFQ(id);
   }
@@ -405,7 +408,7 @@ async getBuyerRfqSummary(buyerId: string): Promise<{ name: string; value: number
 
     // Use absolute path from project root for consistency
     const storagePath = path.join(
-      process.cwd(), // Current working directory (project root)
+      process.cwd(),
       'src/secured-storage/rfq',
       safeRfqId,
     );
@@ -416,14 +419,13 @@ async getBuyerRfqSummary(buyerId: string): Promise<{ name: string; value: number
       const fileName = `${type}-${uniqueSuffix}${ext}`;
       const filePath = path.join(storagePath, fileName);
 
-      // Check if file exists (optional, rare case due to UUID)
       try {
         await fs.access(filePath);
         throw new InternalServerErrorException(
           `File ${fileName} already exists`,
         );
       } catch (error) {
-        if (error.code !== 'ENOENT') throw error; // Only proceed if file doesn't exist
+        if (error.code !== 'ENOENT') throw error;
       }
 
       await fs.writeFile(filePath, file.buffer);
@@ -473,6 +475,6 @@ async getBuyerRfqSummary(buyerId: string): Promise<{ name: string; value: number
     this.deadline = rfq.deadline;
     this.state = rfq.state;
     this.createdAt = rfq.createdAt;
-    this.createdBy = rfq.createdBy?.id || ''; // Assuming buyer is an object with id
+    this.createdBy = rfq.createdBy?.id || '';
   }
 }

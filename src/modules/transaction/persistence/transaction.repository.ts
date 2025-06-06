@@ -54,22 +54,27 @@ export class TransactionRepository {
 
   // get all transactions
   async getTransactionByUserId(transactionId: string, userId: string) {
-    const transaction = await this.transactionRepository.findOne({
+    const transactions = await this.transactionRepository.find({
       where: { transactionId },
       relations: ['bid', 'bid.rfq', 'bid.rfq.createdBy'],
     });
-    console.log('transaction found', transactionId);
-    if (!transaction) {
-      return null;
-    }
-    console.log(transaction.bid.rfq.createdBy.id, 'my id');
 
-    // Check if the RFQ was created by this user
-    if (transaction.bid.rfq.createdBy.id !== userId) {
+    console.log('transactions found for transactionId', transactionId);
+
+    if (!transactions || transactions.length === 0) {
       return null;
     }
 
-    return transaction;
+    const matchingTransaction = transactions.find(
+      (transaction) => transaction.bid?.rfq?.createdBy?.id === userId,
+    );
+
+    console.log(
+      'matching transaction userId',
+      matchingTransaction?.bid?.rfq?.createdBy?.id || 'no match',
+    );
+
+    return matchingTransaction || null;
   }
   // Get all transactions for a Buyer
   async getAllTransactionsByBuyerId(buyerId: string): Promise<Transaction[]> {
@@ -126,25 +131,27 @@ export class TransactionRepository {
     return `TR-${nextNumber.toString().padStart(3, '0')}`;
   }
 
-async generateTransactionHistoryOfSeller(sellerId: string): Promise<Transaction[]> {
-  return this.transactionRepository.find({
-    where: {
-      bid: {
-        createdBy: {
-          id: sellerId,
+  async generateTransactionHistoryOfSeller(
+    sellerId: string,
+  ): Promise<Transaction[]> {
+    return this.transactionRepository.find({
+      where: {
+        bid: {
+          createdBy: {
+            id: sellerId,
+          },
         },
       },
-    },
-    relations: [
-      'bid',
-      'bid.createdBy',
-      'bid.rfq',
-      'bid.rfq.createdBy',
-      'payment',
-    ],
-    order: {
-      date: 'DESC',
-    },
-  });
-}
+      relations: [
+        'bid',
+        'bid.createdBy',
+        'bid.rfq',
+        'bid.rfq.createdBy',
+        'payment',
+      ],
+      order: {
+        date: 'DESC',
+      },
+    });
+  }
 }

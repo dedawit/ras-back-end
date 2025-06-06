@@ -21,6 +21,11 @@ export class ProductService {
     private readonly userService: UserService,
   ) {}
 
+  private id: string;
+  private detail: string;
+  private image: string;
+  private category: string;
+
   /**
    * Generates a unique product ID
    */
@@ -245,5 +250,15 @@ export class ProductService {
     } catch (error) {
       throw new BadRequestException('Image not found or inaccessible');
     }
+  }
+
+  /**
+   * Syncs private attributes with a Product entity
+   */
+  private syncWithProduct(product: Product): void {
+    this.id = product.id;
+    this.detail = product.detail;
+    this.image = product.image;
+    this.category = product.category;
   }
 }

@@ -12,10 +12,14 @@ import { TransactionService } from 'src/modules/transaction/usecase/transaction.
 import { PaymentRepository } from '../persistence/payment.repository';
 import { Logger } from '@nestjs/common';
 import { BidService } from 'src/modules/bid/usecase/bid.service';
+import { Payment } from '../persistence/payment.entity';
 
 @Injectable()
 export class PaymentService {
   private readonly logger = new Logger(PaymentService.name);
+  private id: string;
+  private paymentGateway: string;
+  private price: number;
 
   constructor(
     @Inject(forwardRef(() => TransactionService))
@@ -165,6 +169,8 @@ export class PaymentService {
     const [cleanId, bidId] = transactionId.split('.');
     const bid = await this.bidService.getBid(bidId);
     const userId = bid.rfq.createdBy.id;
+    console.log('userId', userId);
+    console.log('cleanId', cleanId);
     const transaction = await this.transactionService.getTransactionByIdAndUser(
       cleanId,
       userId,
@@ -184,5 +190,14 @@ export class PaymentService {
       date,
       projectName,
     };
+  }
+
+  /**
+   * Syncs private attributes with a Payment entity
+   */
+  private syncWithPayment(payment: Payment): void {
+    this.id = payment.id;
+    this.paymentGateway = payment.paymentGateway;
+    this.price = payment.price;
   }
 }

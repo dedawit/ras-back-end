@@ -13,16 +13,16 @@ import {
   UploadedFiles,
   UsePipes,
 } from '@nestjs/common';
-import { BidService } from '../usecase/bid.service'; // Adjust path
-import { Bid } from '../persistence/bid.entity'; // Adjust path
-import { SerializeResponse } from 'src/modules/common/serialize-response.decorator'; // Adjust path
+import { BidService } from '../usecase/bid.service';
+import { Bid } from '../persistence/bid.entity';
+import { SerializeResponse } from 'src/modules/common/serialize-response.decorator';
 import {
   FileFieldsInterceptor,
   FileInterceptor,
 } from '@nestjs/platform-express';
-import { JwtAuthGuard } from 'src/modules/auth/guard/auth.guard'; // Adjust path
-import { RoleGuard } from 'src/modules/common/guards/role.guard'; // Adjust path
-import { Roles } from 'src/modules/common/roles.decorator'; // Adjust path
+import { JwtAuthGuard } from 'src/modules/auth/guard/auth.guard';
+import { RoleGuard } from 'src/modules/common/guards/role.guard';
+import { Roles } from 'src/modules/common/roles.decorator';
 import { Response } from 'express';
 import { RequestLoggingInterceptor } from 'src/modules/common/request-logging.interceptor';
 import { CreateBidDTO } from '../usecase/dto/create-bid.dto';
@@ -76,7 +76,6 @@ export class BidController {
     return this.bidService.findBidsByUser(sellerId);
   }
 
-  
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Roles('seller')
   @Get('state-count/:userId')
