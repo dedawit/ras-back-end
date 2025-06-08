@@ -76,7 +76,7 @@ export class RFQRepository {
     console.log('id', id);
     const rfq = await this.rfqRepository.findOne({
       where: { id },
-      relations: ['bids', 'createdBy'],
+      relations: ['bids', 'createdBy', 'bids.createdBy'],
     });
     if (!rfq) {
       throw new NotFoundException(`RFQ with ID ${id} not found`);
