@@ -92,7 +92,7 @@ export class RFQController {
     return this.rfqService.findAllRFQsSeller(sellerId);
   }
 
-  @SerializeResponse(RFQResponse)
+  // @SerializeResponse(RFQResponse)
   @UseGuards(JwtAuthGuard)
   @Get(':id/view-rfq')
   async viewRFQ(@Param('id') id: string): Promise<RFQ> {
